@@ -29,9 +29,9 @@ async def fetch_limit(code: str, client) -> dict:
 
         # 申购状态
         status = "unknown"
-        m = re.search(r'申购状态</td>\s*<td[^>]*>(.*?)</td>', text, re.DOTALL)
+        m = re.search(r'申购状态</td>\s*<td[^>]*>\s*([^<]+)\s*</td>', text)
         if m:
-            raw = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+            raw = m.group(1).strip()
             if "暂停" in raw or "停止" in raw or "封闭" in raw:
                 status = "suspended"
             else:
@@ -39,9 +39,9 @@ async def fetch_limit(code: str, client) -> dict:
 
         # 限购金额
         limit = None
-        m = re.search(r'日累计申购限额</td>\s*<td[^>]*>(.*?)</td>', text, re.DOTALL)
+        m = re.search(r'日累计申购限额</td>\s*<td[^>]*>\s*([^<]+)\s*</td>', text)
         if m:
-            raw = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+            raw = m.group(1).strip()
             if "无限额" in raw or "无限制" in raw or raw in ("---", "--", ""):
                 limit = None
             else:
@@ -52,9 +52,9 @@ async def fetch_limit(code: str, client) -> dict:
                         val *= 1e8
                     elif "万" in raw:
                         val *= 1e4
-                    limit = val if val < 1e9 else None  # >=10亿视为无限额
+                    limit = val if val < 1e9 else None
 
-        return {"code": code, "status": status, "limit": limit, "raw_text": raw if 'raw' in dir() else ""}
+        return {"code": code, "status": status, "limit": limit}
     except Exception as e:
         print(f"[WARN] {code} 获取失败: {e}")
         return None

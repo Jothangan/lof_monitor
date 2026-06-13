@@ -11,9 +11,9 @@ import sys
 from datetime import datetime, timezone
 from email.mime.text import MIMEText
 
-QQ_USER = os.environ.get("QQ_EMAIL_USER", "")
-QQ_PASS = os.environ.get("QQ_EMAIL_PASS", "")
-QQ_TO = os.environ.get("QQ_EMAIL_TO", "")
+QQ_USER = os.environ.get("QQ_EMAIL_USER", "1303768055@qq.com")
+QQ_PASS = os.environ.get("QQ_EMAIL_PASS", "xswhybtmqneehgii")
+QQ_TO = os.environ.get("QQ_EMAIL_TO", "1303768055@qq.com")
 
 TENCENT_BATCH = 50
 CODES_FILE = "all_lof_codes.json"
@@ -75,12 +75,11 @@ async def fetch_limits(client, codes: list[str]) -> dict:
                 timeout=10,
             )
             text = resp.text
-
-            # 申购状态
+            # 申购状态（使用 [^<]* 限制匹配纯文本，避免跨标签）
             status = "open"
-            m = re.search(r'申购状态</td>\s*<td[^>]*>(.*?)</td>', text, re.DOTALL)
+            m = re.search(r'申购状态</td>\s*<td[^>]*>\s*([^<]+)\s*</td>', text)
             if m:
-                raw = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+                raw = m.group(1).strip()
                 if "暂停" in raw or "停止" in raw or "封闭" in raw:
                     status = "暂停申购"
                 elif "限制" in raw:
@@ -88,9 +87,9 @@ async def fetch_limits(client, codes: list[str]) -> dict:
 
             # 限购金额
             limit_label = ""
-            m = re.search(r'日累计申购限额</td>\s*<td[^>]*>(.*?)</td>', text, re.DOTALL)
+            m = re.search(r'日累计申购限额</td>\s*<td[^>]*>\s*([^<]+)\s*</td>', text)
             if m:
-                raw = re.sub(r'<[^>]+>', '', m.group(1)).strip()
+                raw = m.group(1).strip()
                 if raw in ("---", "--", ""):
                     limit_label = ""
                 elif "无限额" in raw or "无限制" in raw:

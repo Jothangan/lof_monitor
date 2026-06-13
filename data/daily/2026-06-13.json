@@ -264,8 +264,8 @@
       "nav": 1.3307,
       "amount": 12010000.0,
       "limit": {
-        "status": "未知",
-        "limit_label": ""
+        "status": "暂停申购",
+        "limit_label": "无限额"
       }
     },
     {
