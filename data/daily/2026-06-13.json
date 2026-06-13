@@ -46,8 +46,8 @@
       "nav": 2.0452,
       "amount": 720750000.0,
       "limit": {
-        "status": "未知",
-        "limit_label": ""
+        "status": "暂停申购",
+        "limit_label": "5.00元"
       }
     },
     {
@@ -252,8 +252,8 @@
       "nav": 1.2824,
       "amount": 3110000.0,
       "limit": {
-        "status": "未知",
-        "limit_label": ""
+        "status": "暂停申购",
+        "limit_label": "无限额"
       }
     },
     {
@@ -432,8 +432,8 @@
       "nav": 2.912,
       "amount": 80000.0,
       "limit": {
-        "status": "未知",
-        "limit_label": ""
+        "status": "open",
+        "limit_label": "无限额"
       }
     },
     {

@@ -93,14 +93,13 @@ async def main():
 
     prev_cache = {}
     if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, "r") as f:
+        with open(CACHE_FILE, "r", encoding="utf-8") as f:
             prev_cache = json.load(f)
 
     current = {}
     newly_opened = []
 
     async with httpx.AsyncClient(timeout=10) as client:
-        # 每次检查 50 只（避免太多请求）
         check_codes = all_codes[:50]
         for code in check_codes:
             result = await fetch_limit(code, client)
@@ -115,9 +114,8 @@ async def main():
                         "cur": "open",
                     })
 
-    # 保存当前缓存
     os.makedirs(os.path.dirname(CACHE_FILE) or "/tmp", exist_ok=True)
-    with open(CACHE_FILE, "w") as f:
+    with open(CACHE_FILE, "w", encoding="utf-8") as f:
         json.dump(current, f)
 
     if not newly_opened:
