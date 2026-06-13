@@ -213,13 +213,13 @@ async def main():
     # 持久化限购到缓存
     os.makedirs("data", exist_ok=True)
     try:
-    with open("data/limits_cache.json", "r", encoding="utf-8") as f:
-        cache = json.load(f)
-except (FileNotFoundError, json.JSONDecodeError):
-    cache = {}
-cache.update(limits)
-with open("data/limits_cache.json", "w", encoding="utf-8") as f:
-    json.dump(cache, f, ensure_ascii=False, indent=2)
+        with open("data/limits_cache.json", "r", encoding="utf-8") as f:
+            cache = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        cache = {}
+    cache.update(limits)
+    with open("data/limits_cache.json", "w", encoding="utf-8") as f:
+        json.dump(cache, f, ensure_ascii=False, indent=2)
 
     html = _build_html(top_premium, top_discount, limits)
     subject = f"【LOF收盘】溢价TOP {top_premium[0]['premium_rate']:+.2f}%" if top_premium else "【LOF收盘】无溢价"
