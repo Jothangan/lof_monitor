@@ -228,7 +228,7 @@ async def main():
     recipients = [a.strip() for a in QQ_TO.split(",") if a.strip()]
 
     msg = MIMEText(html, "html", "utf-8")
-    msg["From"] = QQ_USER
+    msg["From"] = f"lof_monitor <{QQ_USER}>"
     msg["To"] = ",".join(recipients)
     msg["Subject"] = subject
 
