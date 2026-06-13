@@ -127,15 +127,17 @@ async def main():
     html = _build_html(newly_opened)
     subject = f"【申购开放】{len(newly_opened)}只基金限购已放开"
 
+    recipients = [a.strip() for a in QQ_TO.split(",") if a.strip()]
+
     msg = MIMEText(html, "html", "utf-8")
-    msg["From"] = f"lof_monitor <{QQ_USER}>"
-    msg["To"] = QQ_TO
+    msg["From"] = QQ_USER
+    msg["To"] = ",".join(recipients)
     msg["Subject"] = subject
 
     ctx = ssl.create_default_context()
     with smtplib.SMTP_SSL("smtp.qq.com", 465, context=ctx, timeout=15) as s:
         s.login(QQ_USER, QQ_PASS)
-        s.sendmail(QQ_USER, [QQ_TO], msg.as_string())
+        s.sendmail(QQ_USER, recipients, msg.as_string())
 
     print(f"邮件已发送: {subject}")
     for f in newly_opened:
