@@ -1,0 +1,36 @@
+name: 开盘前限购检测
+
+on:
+  schedule:
+    - cron: "15 1 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: pip install httpx
+
+      - name: 检测限购开放
+        env:
+          QQ_EMAIL_USER: ${{ secrets.QQ_EMAIL_USER }}
+          QQ_EMAIL_PASS: ${{ secrets.QQ_EMAIL_PASS }}
+          QQ_EMAIL_TO: ${{ secrets.QQ_EMAIL_TO }}
+        run: python scripts/check_limits_gh.py
+
+      - name: 提交限购缓存
+        run: |
+          git config user.name "lof-monitor-bot"
+          git config user.email "bot@lof-monitor"
+          git add data/limits_cache.json
+          git diff --cached --quiet || git commit -m "chore: update limits cache"
+          git push

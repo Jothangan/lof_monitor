@@ -1,0 +1,36 @@
+name: 每日收盘监测
+
+on:
+  schedule:
+    - cron: "30 6 * * 1-5"
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: pip install httpx
+
+      - name: 执行收盘 TOP20 监测
+        env:
+          QQ_EMAIL_USER: ${{ secrets.QQ_EMAIL_USER }}
+          QQ_EMAIL_PASS: ${{ secrets.QQ_EMAIL_PASS }}
+          QQ_EMAIL_TO: ${{ secrets.QQ_EMAIL_TO }}
+        run: python scripts/monitor_top20.py
+
+      - name: 提交数据快照
+        run: |
+          git config user.name "lof-monitor-bot"
+          git config user.email "bot@lof-monitor"
+          git add data/daily/
+          git diff --cached --quiet || git commit -m "chore: add daily snapshot $(date +%Y-%m-%d)"
+          git push
