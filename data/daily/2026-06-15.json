@@ -29,9 +29,9 @@
     {
       "code": "161226",
       "name": "国投白银LOF",
-      "premium": 16.9584,
+      "premium": 11.3433,
       "price": 2.078,
-      "nav": 1.7767,
+      "nav": 1.8663,
       "amount": 474290000.0,
       "limit": {
         "status": "暂停申购",
@@ -111,48 +111,12 @@
       }
     },
     {
-      "code": "165516",
-      "name": "中信保诚周期LOF",
-      "premium": 4.7976,
-      "price": 8.744,
-      "nav": 8.3437,
-      "amount": 1870000.0,
-      "limit": {
-        "status": "open",
-        "limit_label": "无限额"
-      }
-    },
-    {
       "code": "501217",
       "name": "行业配置FOF",
       "premium": 4.6974,
       "price": 1.159,
       "nav": 1.107,
       "amount": 70000.0,
-      "limit": {
-        "status": "open",
-        "limit_label": "无限额"
-      }
-    },
-    {
-      "code": "165528",
-      "name": "中信保诚鼎利LOF",
-      "premium": 4.6516,
-      "price": 2.945,
-      "nav": 2.8141,
-      "amount": 1850000.0,
-      "limit": {
-        "status": "open",
-        "limit_label": "无限额"
-      }
-    },
-    {
-      "code": "165520",
-      "name": "有色LOF",
-      "premium": 4.5209,
-      "price": 3.024,
-      "nav": 2.8932,
-      "amount": 3910000.0,
       "limit": {
         "status": "open",
         "limit_label": "无限额"
@@ -183,47 +147,71 @@
       }
     },
     {
-      "code": "160610",
-      "name": "鹏华动力LOF",
-      "premium": 3.4236,
-      "price": 1.299,
-      "nav": 1.256,
-      "amount": 190000.0,
+      "code": "501312",
+      "name": "海外科技LOF",
+      "premium": 2.3917,
+      "price": 2.376,
+      "nav": 2.3205,
+      "amount": 248540000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "100.00元"
+      }
+    },
+    {
+      "code": "162607",
+      "name": "景顺资源LOF",
+      "premium": 2.0576,
+      "price": 0.496,
+      "nav": 0.486,
+      "amount": 60000.0,
       "limit": {
         "status": "open",
         "limit_label": "无限额"
       }
     },
     {
-      "code": "162605",
-      "name": "景顺鼎益LOF",
-      "premium": 3.1323,
-      "price": 1.778,
-      "nav": 1.724,
-      "amount": 9520000.0,
+      "code": "161116",
+      "name": "黄金主题LOF",
+      "premium": 1.8837,
+      "price": 1.601,
+      "nav": 1.5714,
+      "amount": 53920000.0,
       "limit": {
-        "status": "open",
-        "limit_label": "无限额"
+        "status": "暂停申购",
+        "limit_label": "10.00元"
       }
     },
     {
-      "code": "501080",
-      "name": "科创主题投资基金LOF",
-      "premium": 2.927,
-      "price": 1.709,
-      "nav": 1.6604,
-      "amount": 280000.0,
+      "code": "164701",
+      "name": "黄金LOF",
+      "premium": 1.8788,
+      "price": 1.681,
+      "nav": 1.65,
+      "amount": 72510000.0,
       "limit": {
         "status": "open",
-        "limit_label": "无限额"
+        "limit_label": "500.00元"
       }
     },
     {
-      "code": "165522",
-      "name": "TMTLOF",
-      "premium": 2.6978,
-      "price": 1.458,
-      "nav": 1.4197,
+      "code": "501215",
+      "name": "积极配置FOF",
+      "premium": 1.484,
+      "price": 1.101,
+      "nav": 1.0849,
+      "amount": 260000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "10.00万元"
+      }
+    },
+    {
+      "code": "501213",
+      "name": "中欧汇选FOF",
+      "premium": 1.4756,
+      "price": 0.949,
+      "nav": 0.9352,
       "amount": 10000.0,
       "limit": {
         "status": "open",
@@ -231,12 +219,24 @@
       }
     },
     {
-      "code": "162607",
-      "name": "景顺资源LOF",
-      "premium": 2.6915,
-      "price": 0.496,
-      "nav": 0.483,
-      "amount": 60000.0,
+      "code": "165516",
+      "name": "中信保诚周期LOF",
+      "premium": 1.4656,
+      "price": 8.744,
+      "nav": 8.6177,
+      "amount": 1870000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "165513",
+      "name": "中信保诚商品LOF",
+      "premium": 1.3696,
+      "price": 1.014,
+      "nav": 1.0003,
+      "amount": 1510000.0,
       "limit": {
         "status": "open",
         "limit_label": "无限额"
