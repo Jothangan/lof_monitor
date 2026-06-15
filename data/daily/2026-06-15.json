@@ -1,0 +1,488 @@
+{
+  "date": "2026-06-15",
+  "total_funds": 293,
+  "top20_premium": [
+    {
+      "code": "501225",
+      "name": "全球芯片LOF",
+      "premium": 39.8585,
+      "price": 4.644,
+      "nav": 3.3205,
+      "amount": 45880000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "100.00元"
+      }
+    },
+    {
+      "code": "501046",
+      "name": "财通福鑫定开混合",
+      "premium": 21.8058,
+      "price": 14.014,
+      "nav": 11.5052,
+      "amount": 41250000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "161226",
+      "name": "国投白银LOF",
+      "premium": 16.9584,
+      "price": 2.078,
+      "nav": 1.7767,
+      "amount": 474290000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "100.00元"
+      }
+    },
+    {
+      "code": "501018",
+      "name": "南方原油LOF",
+      "premium": 9.3895,
+      "price": 1.885,
+      "nav": 1.7232,
+      "amount": 624160000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "1.00元"
+      }
+    },
+    {
+      "code": "160644",
+      "name": "港美互联网LOF",
+      "premium": 8.3115,
+      "price": 2.231,
+      "nav": 2.0598,
+      "amount": 1392930000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "1.00万元"
+      }
+    },
+    {
+      "code": "161128",
+      "name": "标普信息科技LOF",
+      "premium": 7.8137,
+      "price": 7.066,
+      "nav": 6.5539,
+      "amount": 200400000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
+      }
+    },
+    {
+      "code": "161130",
+      "name": "纳斯达克100LOF",
+      "premium": 6.1289,
+      "price": 4.755,
+      "nav": 4.4804,
+      "amount": 60880000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
+      }
+    },
+    {
+      "code": "161129",
+      "name": "原油LOF易方达",
+      "premium": 6.0107,
+      "price": 1.739,
+      "nav": 1.6404,
+      "amount": 407360000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
+      }
+    },
+    {
+      "code": "160723",
+      "name": "嘉实原油LOF",
+      "premium": 5.1963,
+      "price": 2.069,
+      "nav": 1.9668,
+      "amount": 780700000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "5.00元"
+      }
+    },
+    {
+      "code": "165516",
+      "name": "中信保诚周期LOF",
+      "premium": 4.7976,
+      "price": 8.744,
+      "nav": 8.3437,
+      "amount": 1870000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "501217",
+      "name": "行业配置FOF",
+      "premium": 4.6974,
+      "price": 1.159,
+      "nav": 1.107,
+      "amount": 70000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "165528",
+      "name": "中信保诚鼎利LOF",
+      "premium": 4.6516,
+      "price": 2.945,
+      "nav": 2.8141,
+      "amount": 1850000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "165520",
+      "name": "有色LOF",
+      "premium": 4.5209,
+      "price": 3.024,
+      "nav": 2.8932,
+      "amount": 3910000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "501210",
+      "name": "交银智选星光FOF",
+      "premium": 4.4702,
+      "price": 1.477,
+      "nav": 1.4138,
+      "amount": 170000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "161133",
+      "name": "优势回报FOF-LOF",
+      "premium": 3.5637,
+      "price": 1.857,
+      "nav": 1.7931,
+      "amount": 650000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "160610",
+      "name": "鹏华动力LOF",
+      "premium": 3.4236,
+      "price": 1.299,
+      "nav": 1.256,
+      "amount": 190000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "162605",
+      "name": "景顺鼎益LOF",
+      "premium": 3.1323,
+      "price": 1.778,
+      "nav": 1.724,
+      "amount": 9520000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "501080",
+      "name": "科创主题投资基金LOF",
+      "premium": 2.927,
+      "price": 1.709,
+      "nav": 1.6604,
+      "amount": 280000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "165522",
+      "name": "TMTLOF",
+      "premium": 2.6978,
+      "price": 1.458,
+      "nav": 1.4197,
+      "amount": 10000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "162607",
+      "name": "景顺资源LOF",
+      "premium": 2.6915,
+      "price": 0.496,
+      "nav": 0.483,
+      "amount": 60000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    }
+  ],
+  "top20_discount": [
+    {
+      "code": "506008",
+      "name": "科创板长城",
+      "premium": -15.4018,
+      "price": 1.137,
+      "nav": 1.344,
+      "amount": 3190000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "506003",
+      "name": "富国科创板",
+      "premium": -7.6293,
+      "price": 1.195,
+      "nav": 1.2937,
+      "amount": 4810000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "506000",
+      "name": "科创板基金",
+      "premium": -7.1254,
+      "price": 1.293,
+      "nav": 1.3922,
+      "amount": 13370000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "506006",
+      "name": "汇添富科创板",
+      "premium": -6.3517,
+      "price": 1.352,
+      "nav": 1.4437,
+      "amount": 1970000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "506005",
+      "name": "科创板博时",
+      "premium": -6.16,
+      "price": 1.694,
+      "nav": 1.8052,
+      "amount": 8500000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "506001",
+      "name": "万家科创板",
+      "premium": -6.1265,
+      "price": 1.687,
+      "nav": 1.7971,
+      "amount": 1250000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "501062",
+      "name": "南方瑞合LOF",
+      "premium": -5.8582,
+      "price": 2.155,
+      "nav": 2.2891,
+      "amount": 2530000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "506002",
+      "name": "易方达科创板",
+      "premium": -5.6225,
+      "price": 2.303,
+      "nav": 2.4402,
+      "amount": 13880000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "501076",
+      "name": "鹏华创新动力LOF",
+      "premium": -4.83,
+      "price": 2.13,
+      "nav": 2.2381,
+      "amount": 800000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "160642",
+      "name": "鹏华增瑞LOF",
+      "premium": -3.6163,
+      "price": 2.468,
+      "nav": 2.5606,
+      "amount": 20000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "162411",
+      "name": "华宝油气LOF",
+      "premium": -3.3993,
+      "price": 0.844,
+      "nav": 0.8737,
+      "amount": 120980000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
+      }
+    },
+    {
+      "code": "160416",
+      "name": "石油基金LOF",
+      "premium": -3.2816,
+      "price": 2.013,
+      "nav": 2.0813,
+      "amount": 31880000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "2.00元"
+      }
+    },
+    {
+      "code": "162719",
+      "name": "石油LOF",
+      "premium": -3.2597,
+      "price": 2.576,
+      "nav": 2.6628,
+      "amount": 60210000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
+      }
+    },
+    {
+      "code": "167002",
+      "name": "鼎越LOF",
+      "premium": -3.2389,
+      "price": 6.175,
+      "nav": 6.3817,
+      "amount": 3260000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "100.00万元"
+      }
+    },
+    {
+      "code": "501032",
+      "name": "财通福盛混合LOF",
+      "premium": -3.1134,
+      "price": 2.057,
+      "nav": 2.1231,
+      "amount": 350000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "501205",
+      "name": "鹏华创新未来LOF",
+      "premium": -3.0917,
+      "price": 1.072,
+      "nav": 1.1062,
+      "amount": 16160000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "160215",
+      "name": "国泰价值LOF",
+      "premium": -3.0368,
+      "price": 4.087,
+      "nav": 4.215,
+      "amount": 1330000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "163208",
+      "name": "全球油气能源LOF",
+      "premium": -2.9503,
+      "price": 1.25,
+      "nav": 1.288,
+      "amount": 8030000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "500.00元"
+      }
+    },
+    {
+      "code": "501099",
+      "name": "平安新兴产业LOF",
+      "premium": -2.8854,
+      "price": 3.773,
+      "nav": 3.8851,
+      "amount": 10160000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "162006",
+      "name": "长城久富LOF",
+      "premium": -2.8235,
+      "price": 1.917,
+      "nav": 1.9727,
+      "amount": 310000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    }
+  ]
+}
