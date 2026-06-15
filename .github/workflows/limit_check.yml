@@ -2,7 +2,7 @@ name: 开盘前限购检测
 
 on:
   schedule:
-    - cron: "15 1 * * 1-5"
+    - cron: "15 22 * * 1-5"
   workflow_dispatch:
 
 jobs:
