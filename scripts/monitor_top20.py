@@ -143,13 +143,15 @@ def _build_html(premium: list, discount: list, limits: dict) -> str:
         for i, f in enumerate(items[:20], 1):
             l = limits.get(f["code"], {})
             badge = _limit_badge(l.get("status", ""), l.get("limit_label", ""))
+            url = f"https://fund.eastmoney.com/{f['code']}.html"
             rows += f"""<tr style="border-bottom:1px solid #f5f5f5">
 <td style="padding:6px 8px;color:#999;width:24px">{i}</td>
-<td style="padding:6px 8px;font-weight:600">{f['code']}</td>
+<td style="padding:6px 8px;font-weight:600"><a href="{url}" target="_blank" style="color:#333;text-decoration:none">{f['code']}</a></td>
 <td style="padding:6px 8px">{f['name'][:12]}</td>
 <td style="padding:6px 8px;color:{color};font-weight:700;text-align:right">{f['premium_rate']:+.2f}%</td>
 <td style="padding:6px 8px;text-align:right">{_format_amt(f.get('amount'))}</td>
 <td style="padding:6px 8px;text-align:center">{badge}</td>
+<td style="padding:6px 8px;text-align:center"><a href="{url}" target="_blank" style="color:#1890ff;font-size:12px">详情</a></td>
 </tr>"""
         return rows
 
@@ -161,14 +163,14 @@ def _build_html(premium: list, discount: list, limits: dict) -> str:
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP20</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;width:24px">#</th><th style="padding:6px 8px;text-align:left">代码</th><th style="padding:6px 8px;text-align:left">名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th></tr></thead>
+<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;width:24px">#</th><th style="padding:6px 8px;text-align:left">代码</th><th style="padding:6px 8px;text-align:left">名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
 <tbody>{_rows(premium)}</tbody></table>
 
 <div style="height:20px"></div>
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#1890ff">💧 折价 TOP20</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#e6f7ff"><th style="padding:6px 8px;width:24px">#</th><th style="padding:6px 8px;text-align:left">代码</th><th style="padding:6px 8px;text-align:left">名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th></tr></thead>
+<thead><tr style="background:#e6f7ff"><th style="padding:6px 8px;width:24px">#</th><th style="padding:6px 8px;text-align:left">代码</th><th style="padding:6px 8px;text-align:left">名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
 <tbody>{_rows(discount, False)}</tbody></table>
 
 <div style="margin-top:16px;padding:10px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;font-size:12px;color:#666">
