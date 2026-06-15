@@ -118,12 +118,16 @@ async def main():
     with open(CACHE_FILE, "w", encoding="utf-8") as f:
         json.dump(current, f)
 
-    if not newly_opened:
+    if newly_opened:
+        html = _build_html(newly_opened)
+        subject = f"【申购开放】{len(newly_opened)}只基金限购已放开"
+        print("检测到限购开放:")
+        for f in newly_opened:
+            print(f"  {f['code']}: {f['prev']} → 开放")
+    else:
+        html = "<div style='font-family:sans-serif;padding:20px'><h2>✅ 限购状态正常</h2><p>今日未检测到限购开放变化。</p></div>"
+        subject = "【限购检测】无变化，系统正常运行"
         print("未检测到限购开放变化")
-        return
-
-    html = _build_html(newly_opened)
-    subject = f"【申购开放】{len(newly_opened)}只基金限购已放开"
 
     recipients = [a.strip() for a in QQ_TO.split(",") if a.strip()]
 
@@ -138,8 +142,6 @@ async def main():
         s.sendmail(QQ_USER, recipients, msg.as_string())
 
     print(f"邮件已发送: {subject}")
-    for f in newly_opened:
-        print(f"  {f['code']}: {f['prev']} → 开放")
 
 
 if __name__ == "__main__":
