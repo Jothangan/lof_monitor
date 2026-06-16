@@ -159,7 +159,7 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> 
     def _rows(items):
         color = "#f5222d"
         rows = ""
-        for i, f in enumerate(items[:20], 1):
+        for f in items:
             l = limits.get(f["code"], {})
             badge = _limit_badge(l.get("status", ""), l.get("limit_label", ""))
             url = f"https://fund.eastmoney.com/{f['code']}.html"
