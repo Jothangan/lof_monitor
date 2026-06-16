@@ -144,22 +144,22 @@ def _build_html(premium: list, discount: list, limits: dict) -> str:
             l = limits.get(f["code"], {})
             badge = _limit_badge(l.get("status", ""), l.get("limit_label", ""))
             url = f"https://fund.eastmoney.com/{f['code']}.html"
-            cp = f.get("change_pct")
-            cp_str = f"{cp:+.2f}%" if cp is not None else "-"
-            # T+1 估算溢价 = 假设净值跟踪价格变动后的溢价
             nav = f.get("nav")
             price = f.get("price")
+            cp = f.get("change_pct")
+            est_nav_val = None
             est_premium = None
             if nav and nav > 0 and price and cp is not None:
-                est_nav = nav * (1 + cp / 100)
-                est_premium = (price - est_nav) / est_nav * 100
+                est_nav_val = round(nav * (1 + cp / 100), 4)
+                est_premium = round((price - est_nav_val) / est_nav_val * 100, 4)
+            est_nav_str = f"{est_nav_val:.4f}" if est_nav_val else "-"
             est_str = f"{est_premium:+.2f}%" if est_premium is not None else "-"
             rows += f"""<tr style="border-bottom:1px solid #f5f5f5">
 <td style="padding:6px 8px;color:#999;width:24px">{i}</td>
 <td style="padding:6px 8px;font-weight:600"><a href="{url}" target="_blank" style="color:#333;text-decoration:none">{f['code']}</a></td>
 <td style="padding:6px 8px">{f['name'][:12]}</td>
 <td style="padding:6px 8px;color:{color};font-weight:700;text-align:right">{f['premium_rate']:+.2f}%</td>
-<td style="padding:6px 8px;text-align:right">{cp_str}</td>
+<td style="padding:6px 8px;text-align:right;color:#999;font-size:12px">{est_nav_str}</td>
 <td style="padding:6px 8px;color:#fa8c16;text-align:right">{est_str}</td>
 <td style="padding:6px 8px;text-align:right">{_format_amt(f.get('amount'))}</td>
 <td style="padding:6px 8px;text-align:center">{badge}</td>
@@ -175,14 +175,14 @@ def _build_html(premium: list, discount: list, limits: dict) -> str:
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP20</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;width:24px">#</th><th style="padding:6px 8px;text-align:left">代码</th><th style="padding:6px 8px;text-align:left">名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">涨跌幅</th><th style="padding:6px 8px;text-align:right">T+1估</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
+<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;width:24px">#</th><th style="padding:6px 8px;text-align:left">代码</th><th style="padding:6px 8px;text-align:left">名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T+1净值</th><th style="padding:6px 8px;text-align:right">T+1估</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
 <tbody>{_rows(premium)}</tbody></table>
 
 <div style="height:20px"></div>
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#1890ff">💧 折价 TOP20</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#e6f7ff"><th style="padding:6px 8px;width:24px">#</th><th style="padding:6px 8px;text-align:left">代码</th><th style="padding:6px 8px;text-align:left">名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">涨跌幅</th><th style="padding:6px 8px;text-align:right">T+1估</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
+<thead><tr style="background:#e6f7ff"><th style="padding:6px 8px;width:24px">#</th><th style="padding:6px 8px;text-align:left">代码</th><th style="padding:6px 8px;text-align:left">名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T+1净值</th><th style="padding:6px 8px;text-align:right">T+1估</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
 <tbody>{_rows(discount, False)}</tbody></table>
 
 <div style="margin-top:16px;padding:10px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;font-size:12px;color:#666">
