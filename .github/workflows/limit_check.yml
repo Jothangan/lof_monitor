@@ -1,4 +1,4 @@
-name: 开盘前限购检测
+name: QDII 申购监控
 
 on:
   schedule:
