@@ -26,3 +26,6 @@ secrets.md
 
 # ── AI 辅助缓存 ──
 .claude/
+
+# ── 数据文件 ──
+*.xlsx
