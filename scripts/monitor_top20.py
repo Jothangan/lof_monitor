@@ -173,11 +173,12 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> 
                 est_premium = round((price - gsz) / gsz * 100, 4)
             est_nav_str = f"{gsz:.4f}" if gsz else "-"
             est_str = f"{est_premium:+.2f}%" if est_premium is not None else "-"
+            dwjz_str = f"{dwjz:.4f}" if dwjz else "-"
+            price_str = f"{price:.4f}" if price else "-"
             rows += f"""<tr style="border-bottom:1px solid #f5f5f5">
-<td style="padding:6px 8px;color:#999;width:24px">{i}</td>
-<td style="padding:6px 8px;font-weight:600"><a href="{url}" target="_blank" style="color:#333;text-decoration:none">{f['code']}</a></td>
-<td style="padding:6px 8px">{f['name'][:12]}</td>
+<td style="padding:6px 8px"><a href="{url}" target="_blank" style="color:#333;text-decoration:none;font-weight:600">{f['code']}</a><br><span style="color:#666;font-size:11px">{f['name'][:14]}</span></td>
 <td style="padding:6px 8px;color:{color};font-weight:700;text-align:right">{f['premium_rate']:+.2f}%</td>
+<td style="padding:6px 8px;text-align:right;color:#999;font-size:12px">{dwjz_str}</td>
 <td style="padding:6px 8px;text-align:right;color:#999;font-size:12px">{est_nav_str}</td>
 <td style="padding:6px 8px;color:#fa8c16;text-align:right">{est_str}</td>
 <td style="padding:6px 8px;text-align:right">{_format_amt(f.get('amount'))}</td>
@@ -194,19 +195,19 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> 
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP20</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;width:24px">#</th><th style="padding:6px 8px;text-align:left">代码</th><th style="padding:6px 8px;text-align:left">名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T+1净值</th><th style="padding:6px 8px;text-align:right">T+1估</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
+<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T0净值</th><th style="padding:6px 8px;text-align:right">T+1估值</th><th style="padding:6px 8px;text-align:right">T+1溢价率(估)</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
 <tbody>{_rows(premium)}</tbody></table>
 
 <div style="height:20px"></div>
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#1890ff">💧 折价 TOP20</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#e6f7ff"><th style="padding:6px 8px;width:24px">#</th><th style="padding:6px 8px;text-align:left">代码</th><th style="padding:6px 8px;text-align:left">名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T+1净值</th><th style="padding:6px 8px;text-align:right">T+1估</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
+<thead><tr style="background:#e6f7ff"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T0净值</th><th style="padding:6px 8px;text-align:right">T+1估值</th><th style="padding:6px 8px;text-align:right">T+1溢价率(估)</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
 <tbody>{_rows(discount, False)}</tbody></table>
 
 <div style="margin-top:16px;padding:10px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;font-size:12px;color:#666">
 红色=暂停申购 / 橙色=限制申购或有限额 / 灰色=开放申购<br>
-净值来源：腾讯行情接口字段81（单位净值）。触发时间：{now}
+T0净值=最新确认净值 / T+1估值=天天基金盘中实时估算。触发时间：{now}
 </div>
 </div></div>"""
 
