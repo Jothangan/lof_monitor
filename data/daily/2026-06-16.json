@@ -59,20 +59,6 @@
       }
     },
     {
-      "code": "161128",
-      "name": "标普信息科技LOF",
-      "premium": 8.5003,
-      "price": 7.111,
-      "nav": 6.5539,
-      "est_nav": 6.6064,
-      "est_premium": 7.638,
-      "amount": 203860000.0,
-      "limit": {
-        "status": "暂停申购",
-        "limit_label": "10.00元"
-      }
-    },
-    {
       "code": "501018",
       "name": "南方原油LOF",
       "premium": 8.0548,
@@ -210,6 +196,20 @@
       "limit": {
         "status": "暂停申购",
         "limit_label": "1.00万元"
+      }
+    },
+    {
+      "code": "161128",
+      "name": "标普信息科技LOF",
+      "premium": 5.1659,
+      "price": 7.111,
+      "nav": 6.7617,
+      "est_nav": 6.6064,
+      "est_premium": 7.638,
+      "amount": 203860000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
       }
     },
     {
