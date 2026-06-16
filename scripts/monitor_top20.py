@@ -64,6 +64,25 @@ async def fetch_quotes(client, codes: list[dict]) -> list[dict]:
     return items
 
 
+async def fetch_est_nav(client, codes: list[str]) -> dict:
+    """从 fundgz 获取实时估算净值"""
+    import re
+    est = {}
+    for code in codes:
+        try:
+            resp = await client.get(f"http://fundgz.1234567.com.cn/js/{code}.js", timeout=10)
+            match = re.search(r'({.*?})', resp.text)
+            if match:
+                d = json.loads(match.group(1))
+                gsz = _safe_float(d.get("gsz"))
+                gszzl = _safe_float(d.get("gszzl"))
+                dwjz = _safe_float(d.get("dwjz"))
+                est[code] = {"nav": dwjz, "est_nav": gsz, "est_change": gszzl}
+        except Exception as e:
+            print(f"[WARN] {code} 估算净值失败: {e}")
+    return est
+
+
 async def fetch_limits(client, codes: list[str]) -> dict:
     """批量爬取申购限额（仅限 TOP40 只基金）"""
     limits = {}
@@ -134,7 +153,7 @@ def _limit_badge(status: str, label: str) -> str:
     return '<span style="color:#999;font-size:11px">开放</span>'
 
 
-def _build_html(premium: list, discount: list, limits: dict) -> str:
+def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     def _rows(items, is_premium=True):
@@ -144,15 +163,15 @@ def _build_html(premium: list, discount: list, limits: dict) -> str:
             l = limits.get(f["code"], {})
             badge = _limit_badge(l.get("status", ""), l.get("limit_label", ""))
             url = f"https://fund.eastmoney.com/{f['code']}.html"
-            nav = f.get("nav")
+            code = f["code"]
+            e = est_navs.get(code, {})
+            gsz = e.get("est_nav")
+            dwjz = e.get("nav")
             price = f.get("price")
-            cp = f.get("change_pct")
-            est_nav_val = None
             est_premium = None
-            if nav and nav > 0 and price and cp is not None:
-                est_nav_val = round(nav * (1 + cp / 100), 4)
-                est_premium = round((price - est_nav_val) / est_nav_val * 100, 4)
-            est_nav_str = f"{est_nav_val:.4f}" if est_nav_val else "-"
+            if gsz and price and gsz > 0:
+                est_premium = round((price - gsz) / gsz * 100, 4)
+            est_nav_str = f"{gsz:.4f}" if gsz else "-"
             est_str = f"{est_premium:+.2f}%" if est_premium is not None else "-"
             rows += f"""<tr style="border-bottom:1px solid #f5f5f5">
 <td style="padding:6px 8px;color:#999;width:24px">{i}</td>
@@ -216,13 +235,14 @@ async def main():
         print("无有效数据，跳过")
         return
 
-    # 获取 TOP40 的申购限额
-    need_limits = set()
-    for f in top_premium + top_discount:
-        need_limits.add(f["code"])
+    # 获取 TOP40 的估算净值 + 申购限额
+    need_codes = list({f["code"] for f in top_premium + top_discount})
     async with httpx.AsyncClient(timeout=10) as client:
-        limits = await fetch_limits(client, list(need_limits))
-    print(f"获取限购信息: {len(limits)} 只")
+        est_navs, limits = await asyncio.gather(
+            fetch_est_nav(client, need_codes),
+            fetch_limits(client, need_codes),
+        )
+    print(f"估算净值: {len(est_navs)} 只, 限购: {len(limits)} 只")
 
     # 持久化限购到缓存
     os.makedirs("data", exist_ok=True)
@@ -235,7 +255,7 @@ async def main():
     with open("data/limits_cache.json", "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, indent=2)
 
-    html = _build_html(top_premium, top_discount, limits)
+    html = _build_html(top_premium, top_discount, est_navs, limits)
     subject = f"【LOF收盘】溢价TOP {top_premium[0]['premium_rate']:+.2f}%" if top_premium else "【LOF收盘】无溢价"
 
     recipients = [a.strip() for a in QQ_TO.split(",") if a.strip()]
@@ -257,29 +277,28 @@ async def main():
 
     # ── 持久化快照 ──
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    def _calc_est(code, price, nav, cp):
-        if nav and nav > 0 and price and cp is not None:
-            est_nav = nav * (1 + cp / 100)
+
+    def _calc_est_premium(price, est_nav):
+        if est_nav and est_nav > 0 and price:
             return round((price - est_nav) / est_nav * 100, 4)
         return None
-
     snapshot = {
         "date": date_str,
         "total_funds": len(valid),
         "top20_premium": [
             {"code": f["code"], "name": f["name"], "premium": f["premium_rate"],
-             "change_pct": f.get("change_pct"),
-             "est_premium": _calc_est(f["code"], f["price"], f["nav"], f.get("change_pct")),
-             "price": f["price"], "nav": f["nav"], "amount": f.get("amount"),
-             "limit": limits.get(f["code"], {})}
+             "price": f["price"], "nav": f["nav"],
+             "est_nav": est_navs.get(f["code"], {}).get("est_nav"),
+             "est_premium": _calc_est_premium(f["price"], est_navs.get(f["code"], {}).get("est_nav")),
+             "amount": f.get("amount"), "limit": limits.get(f["code"], {})}
             for f in top_premium
         ],
         "top20_discount": [
             {"code": f["code"], "name": f["name"], "premium": f["premium_rate"],
-             "change_pct": f.get("change_pct"),
-             "est_premium": _calc_est(f["code"], f["price"], f["nav"], f.get("change_pct")),
-             "price": f["price"], "nav": f["nav"], "amount": f.get("amount"),
-             "limit": limits.get(f["code"], {})}
+             "price": f["price"], "nav": f["nav"],
+             "est_nav": est_navs.get(f["code"], {}).get("est_nav"),
+             "est_premium": _calc_est_premium(f["price"], est_navs.get(f["code"], {}).get("est_nav")),
+             "amount": f.get("amount"), "limit": limits.get(f["code"], {})}
             for f in top_discount
         ],
     }
