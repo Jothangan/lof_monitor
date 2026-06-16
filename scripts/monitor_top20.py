@@ -156,8 +156,8 @@ def _limit_badge(status: str, label: str) -> str:
 def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    def _rows(items, is_premium=True):
-        color = "#f5222d" if is_premium else "#1890ff"
+    def _rows(items):
+        color = "#f5222d"
         rows = ""
         for i, f in enumerate(items[:20], 1):
             l = limits.get(f["code"], {})
@@ -189,21 +189,14 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> 
 
     return f"""<div style="font-family:sans-serif;max-width:680px;margin:0 auto;padding:20px">
 <div style="background:linear-gradient(135deg,#722ed1,#1890ff);border-radius:12px 12px 0 0;padding:20px;text-align:center">
-<h2 style="color:#fff;margin:0;font-size:18px">📊 LOF 溢价率 Top20 · 收盘报告</h2>
+<h2 style="color:#fff;margin:0;font-size:18px">📊 LOF 溢价率 Top40 · 收盘报告</h2>
 </div>
 <div style="background:#fff;border:1px solid #f0f0f0;padding:16px">
 
-<h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP20</h3>
+<h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP40</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
 <thead><tr style="background:#fff1f0"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T-1净值</th><th style="padding:6px 8px;text-align:right">T0估值</th><th style="padding:6px 8px;text-align:right">溢价率(修)</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
 <tbody>{_rows(premium)}</tbody></table>
-
-<div style="height:20px"></div>
-
-<h3 style="margin:0 0 8px;font-size:15px;color:#1890ff">💧 折价 TOP20</h3>
-<table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#e6f7ff"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T-1净值</th><th style="padding:6px 8px;text-align:right">T0估值</th><th style="padding:6px 8px;text-align:right">溢价率(修)</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
-<tbody>{_rows(discount, False)}</tbody></table>
 
 <div style="margin-top:16px;padding:10px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;font-size:12px;color:#666">
 红色=暂停申购 / 橙色=限制申购或有限额 / 灰色=开放申购<br>
@@ -227,17 +220,13 @@ async def main():
 
     valid = [f for f in items if f["premium_rate"] is not None and f.get("amount") and f["amount"] > 0]
     valid.sort(key=lambda x: x["premium_rate"], reverse=True)
-    top_premium = [f for f in valid if f["premium_rate"] > 0][:20]
-    top_discount = [f for f in valid if f["premium_rate"] < 0]
-    top_discount.sort(key=lambda x: x["premium_rate"])
-    top_discount = top_discount[:20]
+    top_premium = [f for f in valid if f["premium_rate"] > 0][:40]
 
-    if not top_premium and not top_discount:
+    if not top_premium:
         print("无有效数据，跳过")
         return
 
-    # 获取 TOP40 的估算净值 + 申购限额
-    need_codes = list({f["code"] for f in top_premium + top_discount})
+    need_codes = [f["code"] for f in top_premium]
     async with httpx.AsyncClient(timeout=10) as client:
         est_navs, limits = await asyncio.gather(
             fetch_est_nav(client, need_codes),
@@ -256,8 +245,8 @@ async def main():
     with open("data/limits_cache.json", "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, indent=2)
 
-    html = _build_html(top_premium, top_discount, est_navs, limits)
-    subject = f"【LOF收盘】溢价TOP {top_premium[0]['premium_rate']:+.2f}%" if top_premium else "【LOF收盘】无溢价"
+    html = _build_html(top_premium, [], est_navs, limits)
+    subject = f"【LOF收盘】溢价TOP {top_premium[0]['premium_rate']:+.2f}%"
 
     recipients = [a.strip() for a in QQ_TO.split(",") if a.strip()]
 
@@ -286,21 +275,13 @@ async def main():
     snapshot = {
         "date": date_str,
         "total_funds": len(valid),
-        "top20_premium": [
+        "top_premium": [
             {"code": f["code"], "name": f["name"], "premium": f["premium_rate"],
              "price": f["price"], "nav": f["nav"],
              "est_nav": est_navs.get(f["code"], {}).get("est_nav"),
              "est_premium": _calc_est_premium(f["price"], est_navs.get(f["code"], {}).get("est_nav")),
              "amount": f.get("amount"), "limit": limits.get(f["code"], {})}
             for f in top_premium
-        ],
-        "top20_discount": [
-            {"code": f["code"], "name": f["name"], "premium": f["premium_rate"],
-             "price": f["price"], "nav": f["nav"],
-             "est_nav": est_navs.get(f["code"], {}).get("est_nav"),
-             "est_premium": _calc_est_premium(f["price"], est_navs.get(f["code"], {}).get("est_nav")),
-             "amount": f.get("amount"), "limit": limits.get(f["code"], {})}
-            for f in top_discount
         ],
     }
     os.makedirs("data/daily", exist_ok=True)
