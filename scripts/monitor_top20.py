@@ -195,19 +195,19 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> 
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP20</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T0净值</th><th style="padding:6px 8px;text-align:right">T+1估值</th><th style="padding:6px 8px;text-align:right">T+1溢价率(估)</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
+<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T-1净值</th><th style="padding:6px 8px;text-align:right">T0估值</th><th style="padding:6px 8px;text-align:right">溢价率(修)</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
 <tbody>{_rows(premium)}</tbody></table>
 
 <div style="height:20px"></div>
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#1890ff">💧 折价 TOP20</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#e6f7ff"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T0净值</th><th style="padding:6px 8px;text-align:right">T+1估值</th><th style="padding:6px 8px;text-align:right">T+1溢价率(估)</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
+<thead><tr style="background:#e6f7ff"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T-1净值</th><th style="padding:6px 8px;text-align:right">T0估值</th><th style="padding:6px 8px;text-align:right">溢价率(修)</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
 <tbody>{_rows(discount, False)}</tbody></table>
 
 <div style="margin-top:16px;padding:10px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;font-size:12px;color:#666">
 红色=暂停申购 / 橙色=限制申购或有限额 / 灰色=开放申购<br>
-T0净值=最新确认净值 / T+1估值=天天基金盘中实时估算。触发时间：{now}
+T-1净值=最新确认净值 / T0估值=天天基金盘中实时估算 / 溢价率(修)=基于T0估值的修正溢价率。触发时间：{now}
 </div>
 </div></div>"""
 
