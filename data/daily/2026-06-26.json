@@ -1,0 +1,216 @@
+{
+  "date": "2026-06-26",
+  "total_funds": 244,
+  "top_premium": [
+    {
+      "code": "501225",
+      "name": "全球芯片LOF",
+      "premium": 31.4723,
+      "price": 4.606,
+      "nav": 3.5034,
+      "est_nav": null,
+      "est_premium": null,
+      "amount": 30070000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "100.00元"
+      }
+    },
+    {
+      "code": "501046",
+      "name": "财通福鑫定开混合",
+      "premium": 26.8842,
+      "price": 16.49,
+      "nav": 12.9961,
+      "est_nav": 12.5337,
+      "est_premium": 31.5653,
+      "amount": 49020000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "161226",
+      "name": "国投白银LOF",
+      "premium": 7.9927,
+      "price": 1.72,
+      "nav": 1.5927,
+      "est_nav": null,
+      "est_premium": null,
+      "amount": 165460000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "100.00元"
+      }
+    },
+    {
+      "code": "161130",
+      "name": "纳斯达克100LOF",
+      "premium": 3.9111,
+      "price": 4.599,
+      "nav": 4.4259,
+      "est_nav": 4.4576,
+      "est_premium": 3.1721,
+      "amount": 32500000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
+      }
+    },
+    {
+      "code": "161128",
+      "name": "标普信息科技LOF",
+      "premium": 2.5954,
+      "price": 6.641,
+      "nav": 6.473,
+      "est_nav": 6.4808,
+      "est_premium": 2.4719,
+      "amount": 138020000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
+      }
+    },
+    {
+      "code": "501200",
+      "name": "科创加银LOF",
+      "premium": 1.9496,
+      "price": 1.757,
+      "nav": 1.7234,
+      "est_nav": 1.7355,
+      "est_premium": 1.2388,
+      "amount": 5470000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "161129",
+      "name": "原油LOF易方达",
+      "premium": 1.5328,
+      "price": 1.444,
+      "nav": 1.4222,
+      "est_nav": null,
+      "est_premium": null,
+      "amount": 186760000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
+      }
+    },
+    {
+      "code": "501018",
+      "name": "南方原油LOF",
+      "premium": 1.3451,
+      "price": 1.522,
+      "nav": 1.5018,
+      "est_nav": null,
+      "est_premium": null,
+      "amount": 492020000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "1.00元"
+      }
+    },
+    {
+      "code": "160723",
+      "name": "嘉实原油LOF",
+      "premium": 0.6946,
+      "price": 1.725,
+      "nav": 1.7131,
+      "est_nav": null,
+      "est_premium": null,
+      "amount": 319590000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "5.00元"
+      }
+    },
+    {
+      "code": "161133",
+      "name": "优势回报FOF-LOF",
+      "premium": 0.6092,
+      "price": 2.114,
+      "nav": 2.1012,
+      "est_nav": 2.0323,
+      "est_premium": 4.0201,
+      "amount": 280000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "160513",
+      "name": "稳健债LOF",
+      "premium": 0.299,
+      "price": 2.214,
+      "nav": 2.2074,
+      "est_nav": 2.2049,
+      "est_premium": 0.4127,
+      "amount": 100000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "160643",
+      "name": "空天军工LOF",
+      "premium": 0.2177,
+      "price": 1.289,
+      "nav": 1.2862,
+      "est_nav": 1.2973,
+      "est_premium": -0.6398,
+      "amount": 1710000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "161119",
+      "name": "易方达新综债LOF",
+      "premium": 0.0839,
+      "price": 1.789,
+      "nav": 1.7875,
+      "est_nav": 1.7875,
+      "est_premium": 0.0839,
+      "amount": 8640000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "161820",
+      "name": "银华纯债LOF",
+      "premium": 0.0777,
+      "price": 1.159,
+      "nav": 1.1581,
+      "est_nav": 1.1582,
+      "est_premium": 0.0691,
+      "amount": 30000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    },
+    {
+      "code": "161115",
+      "name": "易基岁丰添利LOF",
+      "premium": 0.0343,
+      "price": 1.749,
+      "nav": 1.7484,
+      "est_nav": 1.7482,
+      "est_premium": 0.0458,
+      "amount": 810000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      }
+    }
+  ]
+}
