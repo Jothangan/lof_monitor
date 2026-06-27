@@ -23,7 +23,7 @@ jobs:
           python-version: "3.12"
 
       - name: 安装依赖
-        run: pip install httpx
+        run: pip install -r requirements.txt
 
       - name: 执行收盘 TOP40 监测
         env:

@@ -8,7 +8,7 @@ import re
 import smtplib
 import ssl
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from email.mime.text import MIMEText
 
 QQ_USER = os.environ.get("QQ_EMAIL_USER", "1303768055@qq.com")
@@ -137,6 +137,18 @@ def _safe_float(val):
 
 
 HISTORY_CACHE = "data/premium_history_cache.json"
+TZ_CN = timezone(timedelta(hours=8))
+
+
+def _is_trade_day(d: datetime) -> bool:
+    """基于交易日历判断是否为 A 股交易日（chinese_calendar 含法定节假日与调休安排）"""
+    try:
+        import chinese_calendar as cc
+        return cc.is_workday(d.date())
+    except (ImportError, NotImplementedError):
+        # 库未安装或日期超出数据范围：退化为周末判断
+        return d.weekday() < 5
+
 
 def load_premium_history(days=5) -> dict:
     """从全量历史缓存读取最近 N 个**交易日**的溢价数据
@@ -150,7 +162,7 @@ def load_premium_history(days=5) -> dict:
             pass
     sorted_dates = sorted(cache.keys())
     # 排除今天
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = datetime.now(TZ_CN).strftime("%Y-%m-%d")
     sorted_dates = [d for d in sorted_dates if d != today][-days:]
 
     history = {}
@@ -187,7 +199,7 @@ def _limit_badge(status: str, label: str) -> str:
 
 def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
                 history: dict = None, is_trade_day: bool = True) -> str:
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    now = datetime.now(TZ_CN).strftime("%Y-%m-%d %H:%M UTC+8")
 
     all_dates = set()
     if history:
@@ -198,7 +210,7 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
     # 交易日只取最近4个历史日（第5列用今日实时）
     if is_trade_day and len(sorted_dates) > 4:
         sorted_dates = sorted_dates[-4:]
-    today_label = datetime.now(timezone.utc).strftime("%m-%d")
+    today_label = datetime.now(TZ_CN).strftime("%m-%d")
 
     def _val(v, fmt=".4f"):
         return f"{v:{fmt}}" if v is not None else "-"
@@ -332,24 +344,35 @@ async def main():
     codes = _load_codes()
     print(f"加载基金代码: {len(codes)} 只")
 
+    # ── 交易日历判断（北京时间）──
+    now_cn = datetime.now(TZ_CN)
+    date_str = now_cn.strftime("%Y-%m-%d")
+    skip_check = os.environ.get("SKIP_TRADE_CHECK", "").lower() in ("true", "1", "yes")
+    calendar_trade_day = _is_trade_day(now_cn)
+    print(f"当前: {now_cn.strftime('%Y-%m-%d %H:%M')} (UTC+8) | 交易日历: {'交易日' if calendar_trade_day else '非交易日'}")
+
+    if not calendar_trade_day and not skip_check:
+        print("[SKIP] 非交易日（交易日历判定），跳过执行，不更新历史缓存")
+        return
+
     async with httpx.AsyncClient(timeout=15) as client:
         items = await fetch_quotes(client, codes)
 
     print(f"获取行情: {len(items)} 条")
 
-    # ── 非交易日检测：有交易量的基金数极少说明当天休市 ──
+    # ── 成交量辅助校验（交易日历已判定为交易日或强制模式）──
     traded = [f for f in items if f.get("amount") and f["amount"] > 0]
-    skip_check = os.environ.get("SKIP_TRADE_CHECK", "").lower() in ("true", "1", "yes")
-    is_trade_day = len(traded) >= 5
-    if not is_trade_day:
-        if skip_check:
-            print(f"[FORCE] 非交易日检测已跳过 ({len(traded)} 只成交)")
-        else:
-            print(f"[SKIP] 非交易日或数据异常：仅有 {len(traded)} 只基金有成交，跳过")
-            return
+    has_volume = len(traded) >= 5
+
     if skip_check:
-        # 强制模式：视为非交易日，不使用IPOV/实时列
         is_trade_day = False
+        print(f"[FORCE] 强制运行模式（跳过交易日检测），成交 {len(traded)} 只")
+    elif not has_volume:
+        # 交易日但无成交：可能是盘中运行或数据异常
+        is_trade_day = False
+        print(f"[WARN] 交易日但成交异常（仅 {len(traded)} 只），不显示实时列")
+    else:
+        is_trade_day = True
 
     valid = [f for f in items if f["premium_rate"] is not None and f.get("amount") and f["amount"] > 0]
     valid.sort(key=lambda x: x["premium_rate"], reverse=True)
@@ -403,8 +426,10 @@ async def main():
         l = limits.get(top_premium[0]["code"], {})
         print(f"溢价TOP1: {top_premium[0]['code']} {top_premium[0]['premium_rate']:+.2f}% 限购:{l.get('status','')} {l.get('limit_label','')}")
 
-    # ── 持久化快照 ──
-    date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    # ── 持久化（仅交易日写入快照和历史缓存，非交易日强制运行只发邮件）──
+    if not is_trade_day:
+        print("[SKIP] 非交易日强制运行，不写入快照与历史缓存")
+        return
 
     def _calc_est_premium(price, est_nav):
         if est_nav and est_nav > 0 and price:
