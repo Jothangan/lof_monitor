@@ -134,6 +134,30 @@ def _safe_float(val):
         return None
 
 
+def load_premium_history(days=5) -> dict:
+    """读取最近 N 个交易日的溢价数据，返回 {code: [ (date, premium), ... ]}"""
+    import glob
+    files = sorted(glob.glob("data/daily/*.json"))
+    # 排除今天（可能不完整）
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    files = [f for f in files if today not in f][-days:]
+
+    history = {}
+    for fp in files:
+        try:
+            with open(fp, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            date = data.get("date", fp.split("/")[-1].split("\\")[-1].replace(".json", ""))
+            for item in data.get("top_premium", []):
+                code = item.get("code", "")
+                premium = item.get("premium")
+                if code and premium is not None:
+                    history.setdefault(code, []).append((date, premium))
+        except Exception as e:
+            print(f"[WARN] 读取历史 {fp} 失败: {e}")
+    return history
+
+
 def _format_amt(amt):
     if not amt:
         return "-"
@@ -153,8 +177,41 @@ def _limit_badge(status: str, label: str) -> str:
     return '<span style="color:#999;font-size:11px">开放</span>'
 
 
-def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> str:
+def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
+                history: dict = None) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+    def _trend_cell(code: str) -> str:
+        """生成5日溢价趋势HTML"""
+        h = (history or {}).get(code, [])
+        if not h:
+            return '<span style="color:#999;font-size:11px">-</span>'
+        # 按日期排序
+        h.sort(key=lambda x: x[0])
+        parts = []
+        for date, premium in h:
+            color = "#52c41a" if premium > 0 else "#999"
+            parts.append(f'<span style="color:{color};font-size:11px">{premium:+.1f}</span>')
+        # 方向箭头
+        if len(h) >= 2:
+            latest = h[-1][1]
+            prev = h[-2][1]
+            if latest > prev:
+                arrow = "↑"
+                arrow_color = "#f5222d"
+            elif latest < prev:
+                arrow = "↓"
+                arrow_color = "#52c41a"
+            else:
+                arrow = "→"
+                arrow_color = "#999"
+            # 趋势百分比变化
+            change = latest - prev
+            change_str = f'<span style="color:{arrow_color};font-size:11px;font-weight:600"> {arrow} {change:+.1f}</span>'
+        else:
+            change_str = ""
+        dates_str = "/".join(d[0][5:] for d in h)  # 只取 MM-DD
+        return f'<div style="line-height:1.6">{dates_str}<br>{" ".join(parts)}{change_str}</div>'
 
     def _rows(items):
         color = "#f5222d"
@@ -174,7 +231,7 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> 
             est_nav_str = f"{gsz:.4f}" if gsz else "-"
             est_str = f"{est_premium:+.2f}%" if est_premium is not None else "-"
             dwjz_str = f"{dwjz:.4f}" if dwjz else "-"
-            price_str = f"{price:.4f}" if price else "-"
+            trend = _trend_cell(code)
             rows += f"""<tr style="border-bottom:1px solid #f5f5f5">
 <td style="padding:6px 8px"><a href="{url}" target="_blank" style="color:#333;text-decoration:none;font-weight:600">{f['code']}</a><br><span style="color:#666;font-size:11px">{f['name'][:14]}</span></td>
 <td style="padding:6px 8px;color:{color};font-weight:700;text-align:right">{f['premium_rate']:+.2f}%</td>
@@ -183,11 +240,11 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> 
 <td style="padding:6px 8px;color:#fa8c16;text-align:right">{est_str}</td>
 <td style="padding:6px 8px;text-align:right">{_format_amt(f.get('amount'))}</td>
 <td style="padding:6px 8px;text-align:center">{badge}</td>
-<td style="padding:6px 8px;text-align:center"><a href="{url}" target="_blank" style="color:#1890ff;font-size:12px">详情</a></td>
+<td style="padding:6px 8px;text-align:center;font-size:11px">{trend}</td>
 </tr>"""
         return rows
 
-    return f"""<div style="font-family:sans-serif;max-width:680px;margin:0 auto;padding:20px">
+    return f"""<div style="font-family:sans-serif;max-width:720px;margin:0 auto;padding:20px">
 <div style="background:linear-gradient(135deg,#722ed1,#1890ff);border-radius:12px 12px 0 0;padding:20px;text-align:center">
 <h2 style="color:#fff;margin:0;font-size:18px">📊 LOF 溢价率 Top40 · 收盘报告</h2>
 </div>
@@ -195,12 +252,13 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict) -> 
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP40</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T-1净值</th><th style="padding:6px 8px;text-align:right">IPOV</th><th style="padding:6px 8px;text-align:right">IPOV溢价率</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px">详情</th></tr></thead>
+<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T-1净值</th><th style="padding:6px 8px;text-align:right">IPOV</th><th style="padding:6px 8px;text-align:right">IPOV溢价率</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px;text-align:center">近5日溢价</th></tr></thead>
 <tbody>{_rows(premium)}</tbody></table>
 
 <div style="margin-top:16px;padding:10px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;font-size:12px;color:#666">
 红色=暂停申购 / 橙色=限制申购或有限额 / 灰色=开放申购<br>
-T-1净值=最新确认净值 / IPOV=天天基金盘中实时估算 / IPOV溢价率=基于IPOV的修正溢价率。触发时间：{now}
+T-1净值=最新确认净值 / IPOV=天天基金盘中实时估算 / IPOV溢价率=基于IPOV的修正溢价率<br>
+近5日溢价：历史每日溢价率 + 当日较前日变化趋势（↑溢价扩大 / ↓溢价收窄）。触发时间：{now}
 </div>
 </div></div>"""
 
@@ -245,7 +303,11 @@ async def main():
     with open("data/limits_cache.json", "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, indent=2)
 
-    html = _build_html(top_premium, [], est_navs, limits)
+    # ── 加载近5日溢价历史 ──
+    history = load_premium_history(days=5)
+    print(f"加载历史天数: {len(set(d for v in history.values() for d, _ in v))} 天")
+
+    html = _build_html(top_premium, [], est_navs, limits, history=history)
     subject = f"【LOF收盘】溢价TOP {top_premium[0]['premium_rate']:+.2f}%"
 
     recipients = [a.strip() for a in QQ_TO.split(",") if a.strip()]
@@ -280,7 +342,8 @@ async def main():
              "price": f["price"], "nav": f["nav"],
              "est_nav": est_navs.get(f["code"], {}).get("est_nav"),
              "est_premium": _calc_est_premium(f["price"], est_navs.get(f["code"], {}).get("est_nav")),
-             "amount": f.get("amount"), "limit": limits.get(f["code"], {})}
+             "amount": f.get("amount"), "limit": limits.get(f["code"], {}),
+             "history_5d": history.get(f["code"], [])}
             for f in top_premium
         ],
     }
