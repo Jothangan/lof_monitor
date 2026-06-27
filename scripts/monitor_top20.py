@@ -226,6 +226,9 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
             # 历史
             h = (history or {}).get(code, [])
             h_map = dict(h)
+            dwjz_str = f"{dwjz:.4f}" if dwjz else "-"
+            gsz_str = f"{gsz:.4f}" if gsz else "-"
+            est_str = f"{est_premium:+.2f}%" if est_premium is not None else "-"
             trend_cells = ""
             for d in sorted_dates:
                 p = h_map.get(d)
@@ -257,7 +260,7 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
 </tr>
 <tr style="background:#fafafa">
 <td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#888" colspan="5">
-T-1净:<b>{dwjz:.4f}</b> | IPOV:<b>{gsz:.4f}</b> | IPOV溢价:<b style="color:#fa8c16">{est_premium:+.2f}%</b>
+T-1净:<b>{dwjz_str}</b> | IPOV:<b>{gsz_str}</b> | IPOV溢价:<b style="color:#fa8c16">{est_str}</b>
 </td>
 </tr>
 <tr style="background:#fafafa">
