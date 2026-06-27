@@ -251,7 +251,7 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
             date_labels = " | ".join(d[5:] for d in sorted_dates)
 
             rows += f"""<tr style="background:#fff">
-<td style="padding:5px 6px;border-bottom:none" rowspan="3" valign="middle">
+<td style="padding:5px 6px;border-bottom:none" rowspan="4" valign="middle">
 <a href="{url}" target="_blank" style="color:#333;font-weight:600;font-size:12px;text-decoration:none">{code}</a><br>
 <span style="color:#999;font-size:10px">{name}</span>
 </td>
@@ -261,15 +261,15 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
 <td style="padding:5px 6px;border-bottom:none;text-align:right;font-size:11px">{dir_chg}</td>
 </tr>
 <tr style="background:#fafafa">
-<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#888" colspan="4">
-T-1净:<b>{dwjz_str}</b> | IPOV:<b>{gsz_str}</b> | IPOV溢价:<b style="color:#fa8c16">{est_str}</b>
-</td>
+<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#888"><small>T-1净</small><br><b>{dwjz_str}</b></td>
+<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#888"><small>IPOV</small><br><b>{gsz_str}</b></td>
+<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#fa8c16" colspan="2"><small>IPOV溢价</small><br><b>{est_str}</b></td>
+</tr>
+<tr style="background:#fafafa">
+<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#999;text-align:center" colspan="4">{date_labels}</td>
 </tr>
 <tr style="background:#fafafa;border-bottom:2px solid #e8e8e8">
-<td style="padding:2px 6px 6px;font-size:11px;color:#666" colspan="4">
-<span style="color:#999">{date_labels}</span><br>
-{trend_cells}
-</td>
+<td style="padding:2px 6px 6px;font-size:11px;color:#666;text-align:center" colspan="4">{trend_cells}</td>
 </tr>"""
         return rows
 
