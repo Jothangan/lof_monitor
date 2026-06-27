@@ -1,6 +1,7 @@
 {
   "501225": {
-    "apply_status": "暂停申购"
+    "status": "暂停申购",
+    "limit_label": "100.00元"
   },
   "513100": {
     "apply_status": "暂停申购"
@@ -12,13 +13,15 @@
     "apply_status": "暂停申购"
   },
   "161128": {
-    "apply_status": "暂停申购"
+    "status": "暂停申购",
+    "limit_label": "10.00元"
   },
   "159612": {
     "apply_status": "暂停申购"
   },
   "161130": {
-    "apply_status": "暂停申购"
+    "status": "暂停申购",
+    "limit_label": "10.00元"
   },
   "161125": {
     "apply_status": "暂停申购"
@@ -85,5 +88,153 @@
   },
   "160125": {
     "apply_status": "开放申购"
+  },
+  "501046": {
+    "status": "暂停申购",
+    "limit_label": "无限额"
+  },
+  "161226": {
+    "status": "暂停申购",
+    "limit_label": "100.00元"
+  },
+  "160311": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "161816": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "165512": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "160805": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "501301": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "164508": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "166023": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "160220": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "160127": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "161037": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "501201": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "501200": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "160615": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "160527": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "165509": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "161033": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "161039": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "160135": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "501205": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "160223": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "501058": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "168105": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "160629": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "168203": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "160925": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "501036": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "168401": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "165516": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "168701": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "162207": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "502056": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "163110": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "161038": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "501059": {
+    "status": "open",
+    "limit_label": "无限额"
+  },
+  "501085": {
+    "status": "open",
+    "limit_label": "无限额"
   }
 }

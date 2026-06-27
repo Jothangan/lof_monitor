@@ -195,6 +195,9 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
             for d, _, _, _ in v:
                 all_dates.add(d)
     sorted_dates = sorted(all_dates)
+    # 交易日只取最近4个历史日（第5列用今日实时）
+    if is_trade_day and len(sorted_dates) > 4:
+        sorted_dates = sorted_dates[-4:]
     today_label = datetime.now(timezone.utc).strftime("%m-%d")
 
     def _val(v, fmt=".4f"):
@@ -372,10 +375,10 @@ async def main():
     with open("data/limits_cache.json", "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, indent=2)
 
-    # ── 加载历史溢价数据 ──
-    hist_days = 4 if is_trade_day else 5
-    history = load_premium_history(days=hist_days)
-    print(f"加载历史天数: {len(set(d for v in history.values() for d, *_ in v))} 天")
+    # ── 加载历史溢价数据（统一取5天，交易日用4天历史+今日实时） ──
+    history = load_premium_history(days=5)
+    hist_dates = set(d for v in history.values() for d, *_ in v)
+    print(f"加载历史: {len(hist_dates)} 天 ({sorted(hist_dates)})")
 
     html = _build_html(top_premium, [], est_navs, limits, history=history, is_trade_day=is_trade_day)
     subject = f"【LOF收盘】溢价TOP {top_premium[0]['premium_rate']:+.2f}%"
