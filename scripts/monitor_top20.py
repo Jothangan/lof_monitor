@@ -202,19 +202,17 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
                 all_dates.add(d)
     sorted_dates = sorted(all_dates)
 
-    def _trend_rows(items):
-        """每个基金 = 3行：概要 / 净值 / 趋势"""
+    # ── 统一行生成：每个基金3行 ──
+    def _rows(items):
         rows = ""
         for f in items:
             code = f["code"]
             name = f["name"][:14]
             url = f"https://fund.eastmoney.com/{code}.html"
 
-            # 限购
             l = limits.get(code, {})
             badge = _limit_badge(l.get("status", ""), l.get("limit_label", ""))
 
-            # 净值
             e = est_navs.get(code, {})
             dwjz = e.get("nav")
             gsz = e.get("est_nav")
@@ -223,12 +221,13 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
             if gsz and price and gsz > 0:
                 est_premium = round((price - gsz) / gsz * 100, 4)
 
-            # 历史
-            h = (history or {}).get(code, [])
-            h_map = dict(h)
             dwjz_str = f"{dwjz:.4f}" if dwjz else "-"
             gsz_str = f"{gsz:.4f}" if gsz else "-"
             est_str = f"{est_premium:+.2f}%" if est_premium is not None else "-"
+
+            # 历史趋势
+            h = (history or {}).get(code, [])
+            h_map = dict(h)
             trend_cells = ""
             for d in sorted_dates:
                 p = h_map.get(d)
@@ -252,66 +251,27 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
             date_labels = " | ".join(d[5:] for d in sorted_dates)
 
             rows += f"""<tr style="background:#fff">
-<td style="padding:5px 6px;border-bottom:none"><a href="{url}" target="_blank" style="color:#333;font-weight:600;font-size:12px;text-decoration:none">{code}</a><br><span style="color:#999;font-size:10px">{name}</span></td>
+<td style="padding:5px 6px;border-bottom:none" rowspan="3" valign="middle">
+<a href="{url}" target="_blank" style="color:#333;font-weight:600;font-size:12px;text-decoration:none">{code}</a><br>
+<span style="color:#999;font-size:10px">{name}</span>
+</td>
 <td style="padding:5px 6px;border-bottom:none;text-align:right;font-weight:700;color:#f5222d;font-size:12px">{f['premium_rate']:+.2f}%</td>
 <td style="padding:5px 6px;border-bottom:none;text-align:center;font-size:11px">{badge}</td>
 <td style="padding:5px 6px;border-bottom:none;text-align:right;font-size:11px;color:#666">{_format_amt(f.get('amount'))}</td>
 <td style="padding:5px 6px;border-bottom:none;text-align:right;font-size:11px">{dir_chg}</td>
 </tr>
 <tr style="background:#fafafa">
-<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#888" colspan="5">
+<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#888" colspan="4">
 T-1净:<b>{dwjz_str}</b> | IPOV:<b>{gsz_str}</b> | IPOV溢价:<b style="color:#fa8c16">{est_str}</b>
 </td>
 </tr>
-<tr style="background:#fafafa">
-<td style="padding:2px 6px 6px;font-size:11px;color:#666" colspan="5">
+<tr style="background:#fafafa;border-bottom:2px solid #e8e8e8">
+<td style="padding:2px 6px 6px;font-size:11px;color:#666" colspan="4">
 <span style="color:#999">{date_labels}</span><br>
 {trend_cells}
 </td>
 </tr>"""
         return rows
-
-    def _rows(items):
-        color = "#f5222d"
-        rows = ""
-        for f in items:
-            l = limits.get(f["code"], {})
-            badge = _limit_badge(l.get("status", ""), l.get("limit_label", ""))
-            url = f"https://fund.eastmoney.com/{f['code']}.html"
-            code = f["code"]
-            e = est_navs.get(code, {})
-            gsz = e.get("est_nav")
-            dwjz = e.get("nav")
-            price = f.get("price")
-            est_premium = None
-            if gsz and price and gsz > 0:
-                est_premium = round((price - gsz) / gsz * 100, 4)
-            est_nav_str = f"{gsz:.4f}" if gsz else "-"
-            est_str = f"{est_premium:+.2f}%" if est_premium is not None else "-"
-            dwjz_str = f"{dwjz:.4f}" if dwjz else "-"
-            rows += f"""<tr style="border-bottom:1px solid #f5f5f5">
-<td style="padding:6px 8px"><a href="{url}" target="_blank" style="color:#333;text-decoration:none;font-weight:600">{code}</a><br><span style="color:#666;font-size:11px">{f['name'][:14]}</span></td>
-<td style="padding:6px 8px;color:{color};font-weight:700;text-align:right">{f['premium_rate']:+.2f}%</td>
-<td style="padding:6px 8px;text-align:right;color:#999;font-size:12px">{dwjz_str}</td>
-<td style="padding:6px 8px;text-align:right;color:#999;font-size:12px">{est_nav_str}</td>
-<td style="padding:6px 8px;color:#fa8c16;text-align:right">{est_str}</td>
-<td style="padding:6px 8px;text-align:right">{_format_amt(f.get('amount'))}</td>
-<td style="padding:6px 8px;text-align:center">{badge}</td>
-</tr>"""
-        return rows
-
-    trend_html = ""
-    if sorted_dates and history:
-        trend_html = f"""<h3 style="margin:16px 0 8px;font-size:15px;color:#722ed1">📈 近5日溢价趋势</h3>
-<table style="width:100%;border-collapse:collapse;font-size:12px">
-<thead><tr style="background:#f9f0ff">
-<th style="padding:4px 6px;text-align:left;width:100px">代码/名称</th>
-<th style="padding:4px 6px;text-align:right;width:60px">溢价率</th>
-<th style="padding:4px 6px;text-align:center;width:60px">限购</th>
-<th style="padding:4px 6px;text-align:right;width:60px">成交额</th>
-<th style="padding:4px 6px;text-align:center;width:60px">趋势</th>
-</tr></thead>
-<tbody>{_trend_rows(premium)}</tbody></table>"""
 
     return f"""<div style="font-family:sans-serif;max-width:720px;margin:0 auto;padding:20px">
 <div style="background:linear-gradient(135deg,#722ed1,#1890ff);border-radius:12px 12px 0 0;padding:20px;text-align:center">
@@ -321,15 +281,18 @@ T-1净:<b>{dwjz_str}</b> | IPOV:<b>{gsz_str}</b> | IPOV溢价:<b style="color:#f
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP40</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T-1净值</th><th style="padding:6px 8px;text-align:right">IPOV</th><th style="padding:6px 8px;text-align:right">IPOV溢价率</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th></tr></thead>
+<thead><tr style="background:#fff1f0">
+<th style="padding:6px 8px;text-align:left">代码/名称</th>
+<th style="padding:6px 8px;text-align:right">溢价率</th>
+<th style="padding:6px 8px;text-align:center">限购</th>
+<th style="padding:6px 8px;text-align:right">成交额</th>
+<th style="padding:6px 8px;text-align:center">趋势</th>
+</tr></thead>
 <tbody>{_rows(premium)}</tbody></table>
-
-{trend_html}
 
 <div style="margin-top:16px;padding:10px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;font-size:12px;color:#666">
 红色=暂停申购 / 橙色=限制申购或有限额 / 灰色=开放申购<br>
-T-1净值=最新确认净值 / IPOV=天天基金盘中实时估算 / IPOV溢价率=基于IPOV的修正溢价率<br>
-近5日溢价趋势：历史每日溢价率对比，趋势列↑溢价扩大↓溢价收窄。触发时间：{now}
+趋势列↑溢价扩大↓溢价收窄。触发时间：{now}
 </div>
 </div></div>"""
 
