@@ -1,0 +1,819 @@
+{
+  "date": "2026-06-27",
+  "total_funds": 262,
+  "top_premium": [
+    {
+      "code": "501046",
+      "name": "财通福鑫定开混合",
+      "premium": 35.9041,
+      "price": 17.206,
+      "nav": 12.6604,
+      "est_nav": 12.4276,
+      "est_premium": 38.4499,
+      "amount": 64750000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-22",
+          42.301
+        ],
+        [
+          "2026-06-26",
+          26.8842
+        ]
+      ]
+    },
+    {
+      "code": "501225",
+      "name": "全球芯片LOF",
+      "premium": 26.4627,
+      "price": 4.604,
+      "nav": 3.6406,
+      "est_nav": null,
+      "est_premium": null,
+      "amount": 30070000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "100.00元"
+      },
+      "history_5d": [
+        [
+          "2026-06-18",
+          36.1411
+        ],
+        [
+          "2026-06-19",
+          33.5733
+        ],
+        [
+          "2026-06-22",
+          31.5543
+        ],
+        [
+          "2026-06-25",
+          38.1473
+        ],
+        [
+          "2026-06-26",
+          31.4723
+        ]
+      ]
+    },
+    {
+      "code": "161226",
+      "name": "国投白银LOF",
+      "premium": 9.7392,
+      "price": 1.742,
+      "nav": 1.5874,
+      "est_nav": null,
+      "est_premium": null,
+      "amount": 218300000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "100.00元"
+      },
+      "history_5d": [
+        [
+          "2026-06-18",
+          4.4048
+        ],
+        [
+          "2026-06-19",
+          4.8256
+        ],
+        [
+          "2026-06-22",
+          4.7203
+        ],
+        [
+          "2026-06-25",
+          5.3255
+        ],
+        [
+          "2026-06-26",
+          7.9927
+        ]
+      ]
+    },
+    {
+      "code": "160311",
+      "name": "华夏蓝筹LOF",
+      "premium": 3.8208,
+      "price": 1.576,
+      "nav": 1.518,
+      "est_nav": 1.5429,
+      "est_premium": 2.1453,
+      "amount": 190000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "161130",
+      "name": "纳斯达克100LOF",
+      "premium": 3.1961,
+      "price": 4.601,
+      "nav": 4.4585,
+      "est_nav": 4.4122,
+      "est_premium": 4.279,
+      "amount": 40070000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
+      },
+      "history_5d": [
+        [
+          "2026-06-18",
+          5.3724
+        ],
+        [
+          "2026-06-19",
+          6.8243
+        ],
+        [
+          "2026-06-22",
+          6.512
+        ],
+        [
+          "2026-06-25",
+          6.0712
+        ],
+        [
+          "2026-06-26",
+          3.9111
+        ]
+      ]
+    },
+    {
+      "code": "161128",
+      "name": "标普信息科技LOF",
+      "premium": 2.7555,
+      "price": 6.649,
+      "nav": 6.4707,
+      "est_nav": 6.4666,
+      "est_premium": 2.8206,
+      "amount": 165530000.0,
+      "limit": {
+        "status": "暂停申购",
+        "limit_label": "10.00元"
+      },
+      "history_5d": [
+        [
+          "2026-06-18",
+          6.2897
+        ],
+        [
+          "2026-06-19",
+          7.3873
+        ],
+        [
+          "2026-06-22",
+          6.8397
+        ],
+        [
+          "2026-06-25",
+          5.8493
+        ],
+        [
+          "2026-06-26",
+          2.5954
+        ]
+      ]
+    },
+    {
+      "code": "161816",
+      "name": "中证90LOF",
+      "premium": 2.7495,
+      "price": 1.009,
+      "nav": 0.982,
+      "est_nav": 0.978,
+      "est_premium": 3.1697,
+      "amount": 330000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-25",
+          6.1032
+        ]
+      ]
+    },
+    {
+      "code": "165512",
+      "name": "中信保诚机遇LOF",
+      "premium": 2.5318,
+      "price": 1.219,
+      "nav": 1.1889,
+      "est_nav": 1.1868,
+      "est_premium": 2.7132,
+      "amount": 20000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-19",
+          2.0223
+        ]
+      ]
+    },
+    {
+      "code": "160805",
+      "name": "长盛同智LOF",
+      "premium": 2.0686,
+      "price": 0.75,
+      "nav": 0.7348,
+      "est_nav": 0.7398,
+      "est_premium": 1.3788,
+      "amount": 40000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "501301",
+      "name": "香港大盘LOF",
+      "premium": 2.0127,
+      "price": 1.11,
+      "nav": 1.0881,
+      "est_nav": 1.0874,
+      "est_premium": 2.0784,
+      "amount": 1100000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "164508",
+      "name": "国富中证A100LOF",
+      "premium": 1.8142,
+      "price": 1.403,
+      "nav": 1.378,
+      "est_nav": 1.3742,
+      "est_premium": 2.0958,
+      "amount": 10000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "166023",
+      "name": "中欧瑞丰LOF",
+      "premium": 1.7983,
+      "price": 1.636,
+      "nav": 1.6071,
+      "est_nav": 1.6108,
+      "est_premium": 1.5644,
+      "amount": 420000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "160220",
+      "name": "国泰民益LOF",
+      "premium": 1.6993,
+      "price": 5.877,
+      "nav": 5.7788,
+      "est_nav": 5.8001,
+      "est_premium": 1.3258,
+      "amount": 2420000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-18",
+          3.7485
+        ],
+        [
+          "2026-06-25",
+          2.1792
+        ]
+      ]
+    },
+    {
+      "code": "160127",
+      "name": "南方消费LOF",
+      "premium": 1.6405,
+      "price": 0.855,
+      "nav": 0.8412,
+      "est_nav": 0.843,
+      "est_premium": 1.4235,
+      "amount": 20000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-19",
+          1.1877
+        ]
+      ]
+    },
+    {
+      "code": "161037",
+      "name": "高端制造LOF",
+      "premium": 1.566,
+      "price": 3.191,
+      "nav": 3.1418,
+      "est_nav": 3.151,
+      "est_premium": 1.2694,
+      "amount": 330000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "501201",
+      "name": "科创红土LOF",
+      "premium": 1.5609,
+      "price": 3.481,
+      "nav": 3.4275,
+      "est_nav": 3.4326,
+      "est_premium": 1.41,
+      "amount": 8550000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-18",
+          3.9148
+        ],
+        [
+          "2026-06-22",
+          5.611
+        ],
+        [
+          "2026-06-25",
+          3.1447
+        ]
+      ]
+    },
+    {
+      "code": "501200",
+      "name": "科创加银LOF",
+      "premium": 1.4418,
+      "price": 1.766,
+      "nav": 1.7409,
+      "est_nav": 1.7255,
+      "est_premium": 2.3471,
+      "amount": 7020000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-25",
+          3.8693
+        ],
+        [
+          "2026-06-26",
+          1.9496
+        ]
+      ]
+    },
+    {
+      "code": "160615",
+      "name": "鹏华300LOF",
+      "premium": 1.2667,
+      "price": 1.487,
+      "nav": 1.4684,
+      "est_nav": 1.4636,
+      "est_premium": 1.5988,
+      "amount": 30000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "160527",
+      "name": "博时研究优选LOF",
+      "premium": 1.2551,
+      "price": 0.839,
+      "nav": 0.8286,
+      "est_nav": 0.8249,
+      "est_premium": 1.7093,
+      "amount": 10000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "165509",
+      "name": "中信保诚增强LOF",
+      "premium": 1.1707,
+      "price": 1.279,
+      "nav": 1.2642,
+      "est_nav": 1.2637,
+      "est_premium": 1.2107,
+      "amount": 10000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "161033",
+      "name": "智能汽车LOF",
+      "premium": 1.1001,
+      "price": 1.93,
+      "nav": 1.909,
+      "est_nav": 1.9055,
+      "est_premium": 1.2858,
+      "amount": 170000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "161039",
+      "name": "1000增强LOF",
+      "premium": 1.0458,
+      "price": 3.005,
+      "nav": 2.9739,
+      "est_nav": 2.9775,
+      "est_premium": 0.9236,
+      "amount": 80000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "160135",
+      "name": "高铁基金LOF",
+      "premium": 1.0327,
+      "price": 0.949,
+      "nav": 0.9393,
+      "est_nav": 0.9378,
+      "est_premium": 1.1943,
+      "amount": 20000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-19",
+          0.7019
+        ]
+      ]
+    },
+    {
+      "code": "501205",
+      "name": "鹏华创新未来LOF",
+      "premium": 1.0292,
+      "price": 1.227,
+      "nav": 1.2145,
+      "est_nav": 1.2116,
+      "est_premium": 1.271,
+      "amount": 16180000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-18",
+          2.0425
+        ],
+        [
+          "2026-06-25",
+          2.812
+        ]
+      ]
+    },
+    {
+      "code": "160223",
+      "name": "创业板LOF",
+      "premium": 1.0018,
+      "price": 2.339,
+      "nav": 2.3158,
+      "est_nav": 2.3098,
+      "est_premium": 1.2642,
+      "amount": 860000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-25",
+          2.328
+        ]
+      ]
+    },
+    {
+      "code": "501058",
+      "name": "新能源车LOFC",
+      "premium": 0.9804,
+      "price": 2.338,
+      "nav": 2.3153,
+      "est_nav": 2.3072,
+      "est_premium": 1.335,
+      "amount": 290000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "168105",
+      "name": "九泰泰富LOF",
+      "premium": 0.8122,
+      "price": 2.892,
+      "nav": 2.8687,
+      "est_nav": 2.8853,
+      "est_premium": 0.2322,
+      "amount": 610000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-18",
+          2.999
+        ],
+        [
+          "2026-06-25",
+          2.3735
+        ]
+      ]
+    },
+    {
+      "code": "160629",
+      "name": "传媒LOF",
+      "premium": 0.7973,
+      "price": 1.024,
+      "nav": 1.0159,
+      "est_nav": 1.0138,
+      "est_premium": 1.0061,
+      "amount": 40000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "168203",
+      "name": "钢铁LOF",
+      "premium": 0.7067,
+      "price": 1.14,
+      "nav": 1.132,
+      "est_nav": 1.1269,
+      "est_premium": 1.1625,
+      "amount": 30000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "160925",
+      "name": "沪深港300LOF",
+      "premium": 0.6942,
+      "price": 1.291,
+      "nav": 1.2821,
+      "est_nav": 1.2795,
+      "est_premium": 0.8988,
+      "amount": 40000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-19",
+          1.1109
+        ]
+      ]
+    },
+    {
+      "code": "501036",
+      "name": "中证500LOF",
+      "premium": 0.6655,
+      "price": 1.664,
+      "nav": 1.653,
+      "est_nav": 1.6502,
+      "est_premium": 0.8363,
+      "amount": 320000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "168401",
+      "name": "红土创新精选LOF",
+      "premium": 0.642,
+      "price": 8.575,
+      "nav": 8.5203,
+      "est_nav": 8.4996,
+      "est_premium": 0.8871,
+      "amount": 11860000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-18",
+          3.5635
+        ],
+        [
+          "2026-06-22",
+          5.7425
+        ],
+        [
+          "2026-06-25",
+          2.6468
+        ]
+      ]
+    },
+    {
+      "code": "165516",
+      "name": "中信保诚周期LOF",
+      "premium": 0.6394,
+      "price": 8.61,
+      "nav": 8.5553,
+      "est_nav": 8.6129,
+      "est_premium": -0.0337,
+      "amount": 430000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "168701",
+      "name": "金融科技LOF",
+      "premium": 0.6355,
+      "price": 0.966,
+      "nav": 0.9599,
+      "est_nav": 0.9548,
+      "est_premium": 1.173,
+      "amount": 120000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-22",
+          4.3249
+        ]
+      ]
+    },
+    {
+      "code": "162207",
+      "name": "宏利效率混合LOF",
+      "premium": 0.6298,
+      "price": 1.502,
+      "nav": 1.4926,
+      "est_nav": 1.4962,
+      "est_premium": 0.3876,
+      "amount": 380000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "502056",
+      "name": "医疗基金LOF",
+      "premium": 0.6129,
+      "price": 0.591,
+      "nav": 0.5874,
+      "est_nav": 0.586,
+      "est_premium": 0.8532,
+      "amount": 140000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-19",
+          0.7818
+        ]
+      ]
+    },
+    {
+      "code": "163110",
+      "name": "申万量化LOF",
+      "premium": 0.582,
+      "price": 2.454,
+      "nav": 2.4398,
+      "est_nav": 2.4305,
+      "est_premium": 0.9669,
+      "amount": 30000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "161038",
+      "name": "成长LOF",
+      "premium": 0.5774,
+      "price": 1.916,
+      "nav": 1.905,
+      "est_nav": 1.9082,
+      "est_premium": 0.4088,
+      "amount": 10000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-19",
+          2.1345
+        ]
+      ]
+    },
+    {
+      "code": "501059",
+      "name": "国企红利LOF",
+      "premium": 0.5635,
+      "price": 2.088,
+      "nav": 2.0763,
+      "est_nav": 2.0674,
+      "est_premium": 0.9964,
+      "amount": 60000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": []
+    },
+    {
+      "code": "501085",
+      "name": "财通科创LOF",
+      "premium": 0.549,
+      "price": 3.883,
+      "nav": 3.8618,
+      "est_nav": 3.998,
+      "est_premium": -2.8764,
+      "amount": 7490000.0,
+      "limit": {
+        "status": "open",
+        "limit_label": "无限额"
+      },
+      "history_5d": [
+        [
+          "2026-06-18",
+          16.9859
+        ],
+        [
+          "2026-06-19",
+          11.3423
+        ],
+        [
+          "2026-06-22",
+          3.19
+        ]
+      ]
+    }
+  ]
+}
