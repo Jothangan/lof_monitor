@@ -135,19 +135,31 @@ def _safe_float(val):
 
 
 def load_premium_history(days=5) -> dict:
-    """读取最近 N 个交易日的溢价数据，返回 {code: [ (date, premium), ... ]}"""
+    """读取最近 N 个**交易日**的溢价数据，返回 {code: [ (date, premium), ... ]}"""
     import glob
     files = sorted(glob.glob("data/daily/*.json"))
-    # 排除今天（可能不完整）
+    # 排除今天（当天数据尚未写入）和空快照
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    files = [f for f in files if today not in f][-days:]
-
-    history = {}
+    trade_files = []
     for fp in files:
+        fname = os.path.basename(fp).replace(".json", "")
+        if fname == today:
+            continue
         try:
             with open(fp, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            date = data.get("date", fp.split("/")[-1].split("\\")[-1].replace(".json", ""))
+            if data.get("top_premium") and len(data["top_premium"]) > 0:
+                trade_files.append(fp)
+        except Exception:
+            pass
+    trade_files = trade_files[-days:]
+
+    history = {}
+    for fp in trade_files:
+        try:
+            with open(fp, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            date = data.get("date", os.path.basename(fp).replace(".json", ""))
             for item in data.get("top_premium", []):
                 code = item.get("code", "")
                 premium = item.get("premium")
@@ -155,6 +167,7 @@ def load_premium_history(days=5) -> dict:
                     history.setdefault(code, []).append((date, premium))
         except Exception as e:
             print(f"[WARN] 读取历史 {fp} 失败: {e}")
+    print(f"历史交易日: {len(trade_files)} 天 ({[os.path.basename(f)[:10] for f in trade_files]})")
     return history
 
 
@@ -275,6 +288,12 @@ async def main():
         items = await fetch_quotes(client, codes)
 
     print(f"获取行情: {len(items)} 条")
+
+    # ── 非交易日检测：有交易量的基金数极少说明当天休市 ──
+    traded = [f for f in items if f.get("amount") and f["amount"] > 0]
+    if len(traded) < 5:
+        print(f"[SKIP] 非交易日或数据异常：仅有 {len(traded)} 只基金有成交，跳过")
+        return
 
     valid = [f for f in items if f["premium_rate"] is not None and f.get("amount") and f["amount"] > 0]
     valid.sort(key=lambda x: x["premium_rate"], reverse=True)
