@@ -194,37 +194,51 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
                 history: dict = None) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    def _trend_cell(code: str) -> str:
-        """生成5日溢价趋势HTML"""
-        h = (history or {}).get(code, [])
-        if not h:
-            return '<span style="color:#999;font-size:11px">-</span>'
-        # 按日期排序
-        h.sort(key=lambda x: x[0])
-        parts = []
-        for date, premium in h:
-            color = "#52c41a" if premium > 0 else "#999"
-            parts.append(f'<span style="color:{color};font-size:11px">{premium:+.1f}</span>')
-        # 方向箭头
-        if len(h) >= 2:
-            latest = h[-1][1]
-            prev = h[-2][1]
-            if latest > prev:
-                arrow = "↑"
-                arrow_color = "#f5222d"
-            elif latest < prev:
-                arrow = "↓"
-                arrow_color = "#52c41a"
+    # ── 收集所有历史日期，构建统一列头 ──
+    all_dates = set()
+    if history:
+        for v in history.values():
+            for d, _ in v:
+                all_dates.add(d)
+    sorted_dates = sorted(all_dates)
+
+    def _trend_rows(items):
+        """生成独立的5日溢价趋势表"""
+        rows = ""
+        for f in items:
+            code = f["code"]
+            name = f["name"][:14]
+            h = (history or {}).get(code, [])
+            h_map = dict(h)  # {date: premium}
+            td_list = ""
+            for d in sorted_dates:
+                p = h_map.get(d)
+                if p is not None:
+                    color = "#52c41a" if p > 0 else "#999"
+                    td_list += f'<td style="padding:4px 6px;text-align:center;color:{color}">{p:+.1f}</td>'
+                else:
+                    td_list += '<td style="padding:4px 6px;text-align:center;color:#ddd">-</td>'
+            # 方向
+            vals = [h_map[d] for d in sorted_dates if d in h_map]
+            if len(vals) >= 2:
+                diff = vals[-1] - vals[-2]
+                if diff > 0:
+                    arrow, ac = "↑", "#f5222d"
+                elif diff < 0:
+                    arrow, ac = "↓", "#52c41a"
+                else:
+                    arrow, ac = "→", "#999"
+                dir_cell = f'<td style="padding:4px 6px;text-align:center;color:{ac};font-weight:600">{arrow}</td>'
+                chg_cell = f'<td style="padding:4px 6px;text-align:right;color:{ac}">{diff:+.1f}</td>'
             else:
-                arrow = "→"
-                arrow_color = "#999"
-            # 趋势百分比变化
-            change = latest - prev
-            change_str = f'<span style="color:{arrow_color};font-size:11px;font-weight:600"> {arrow} {change:+.1f}</span>'
-        else:
-            change_str = ""
-        dates_str = "/".join(d[0][5:] for d in h)  # 只取 MM-DD
-        return f'<div style="line-height:1.6">{dates_str}<br>{" ".join(parts)}{change_str}</div>'
+                dir_cell = '<td style="padding:4px 6px;text-align:center;color:#999">-</td>'
+                chg_cell = '<td style="padding:4px 6px;text-align:right;color:#999">-</td>'
+            url = f"https://fund.eastmoney.com/{code}.html"
+            rows += f"""<tr style="border-bottom:1px solid #f0f0f0">
+<td style="padding:4px 6px"><a href="{url}" target="_blank" style="color:#333;font-size:12px;text-decoration:none">{code}</a><br><span style="color:#999;font-size:10px">{name}</span></td>
+<td style="padding:4px 6px;text-align:right;font-weight:600;color:#f5222d;font-size:12px">{f['premium_rate']:+.2f}%</td>
+{td_list}{dir_cell}{chg_cell}</tr>"""
+        return rows
 
     def _rows(items):
         color = "#f5222d"
@@ -244,18 +258,29 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
             est_nav_str = f"{gsz:.4f}" if gsz else "-"
             est_str = f"{est_premium:+.2f}%" if est_premium is not None else "-"
             dwjz_str = f"{dwjz:.4f}" if dwjz else "-"
-            trend = _trend_cell(code)
             rows += f"""<tr style="border-bottom:1px solid #f5f5f5">
-<td style="padding:6px 8px"><a href="{url}" target="_blank" style="color:#333;text-decoration:none;font-weight:600">{f['code']}</a><br><span style="color:#666;font-size:11px">{f['name'][:14]}</span></td>
+<td style="padding:6px 8px"><a href="{url}" target="_blank" style="color:#333;text-decoration:none;font-weight:600">{code}</a><br><span style="color:#666;font-size:11px">{f['name'][:14]}</span></td>
 <td style="padding:6px 8px;color:{color};font-weight:700;text-align:right">{f['premium_rate']:+.2f}%</td>
 <td style="padding:6px 8px;text-align:right;color:#999;font-size:12px">{dwjz_str}</td>
 <td style="padding:6px 8px;text-align:right;color:#999;font-size:12px">{est_nav_str}</td>
 <td style="padding:6px 8px;color:#fa8c16;text-align:right">{est_str}</td>
 <td style="padding:6px 8px;text-align:right">{_format_amt(f.get('amount'))}</td>
 <td style="padding:6px 8px;text-align:center">{badge}</td>
-<td style="padding:6px 8px;text-align:center;font-size:11px">{trend}</td>
 </tr>"""
         return rows
+
+    # ── 趋势表头：日期列 ──
+    date_th = "".join(f'<th style="padding:4px 6px;text-align:center;font-size:11px;color:#666">{d[5:]}</th>' for d in sorted_dates)
+    trend_html = ""
+    if sorted_dates and history:
+        trend_html = f"""<h3 style="margin:16px 0 8px;font-size:15px;color:#722ed1">📈 近5日溢价趋势</h3>
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+<thead><tr style="background:#f9f0ff">
+<th style="padding:4px 6px;text-align:left">代码/名称</th>
+<th style="padding:4px 6px;text-align:right">当前溢价</th>
+{date_th}<th style="padding:4px 6px;text-align:center">方向</th><th style="padding:4px 6px;text-align:right">变化</th>
+</tr></thead>
+<tbody>{_trend_rows(premium)}</tbody></table>"""
 
     return f"""<div style="font-family:sans-serif;max-width:720px;margin:0 auto;padding:20px">
 <div style="background:linear-gradient(135deg,#722ed1,#1890ff);border-radius:12px 12px 0 0;padding:20px;text-align:center">
@@ -265,13 +290,15 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
 
 <h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP40</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T-1净值</th><th style="padding:6px 8px;text-align:right">IPOV</th><th style="padding:6px 8px;text-align:right">IPOV溢价率</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th><th style="padding:6px 8px;text-align:center">近5日溢价</th></tr></thead>
+<thead><tr style="background:#fff1f0"><th style="padding:6px 8px;text-align:left">代码/名称</th><th style="padding:6px 8px;text-align:right">溢价率</th><th style="padding:6px 8px;text-align:right">T-1净值</th><th style="padding:6px 8px;text-align:right">IPOV</th><th style="padding:6px 8px;text-align:right">IPOV溢价率</th><th style="padding:6px 8px;text-align:right">成交额</th><th style="padding:6px 8px">限购</th></tr></thead>
 <tbody>{_rows(premium)}</tbody></table>
+
+{trend_html}
 
 <div style="margin-top:16px;padding:10px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;font-size:12px;color:#666">
 红色=暂停申购 / 橙色=限制申购或有限额 / 灰色=开放申购<br>
 T-1净值=最新确认净值 / IPOV=天天基金盘中实时估算 / IPOV溢价率=基于IPOV的修正溢价率<br>
-近5日溢价：历史每日溢价率 + 当日较前日变化趋势（↑溢价扩大 / ↓溢价收窄）。触发时间：{now}
+近5日溢价趋势：历史每日溢价率对比，方向列↑溢价扩大↓溢价收窄。触发时间：{now}
 </div>
 </div></div>"""
 
