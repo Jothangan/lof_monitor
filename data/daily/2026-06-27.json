@@ -12,8 +12,8 @@
       "est_premium": 38.4499,
       "amount": 64750000.0,
       "limit": {
-        "status": "暂停申购",
-        "limit_label": "无限额"
+        "status": "未知",
+        "limit_label": ""
       },
       "history_5d": [
         [
@@ -40,8 +40,8 @@
       "est_premium": null,
       "amount": 30070000.0,
       "limit": {
-        "status": "暂停申购",
-        "limit_label": "100.00元"
+        "status": "未知",
+        "limit_label": ""
       },
       "history_5d": [
         [
