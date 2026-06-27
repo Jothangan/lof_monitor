@@ -51,11 +51,16 @@ async def fetch_quotes(client, codes: list[dict]) -> list[dict]:
                     continue
                 price = _safe_float(fields[3])
                 nav = _safe_float(fields[81])
+                high = _safe_float(fields[33])
+                low = _safe_float(fields[34])
+                prev_close = _safe_float(fields[4])
+                amplitude = round((high - low) / prev_close * 100, 2) if high and low and prev_close and prev_close > 0 else 0.0
                 premium = round((price - nav) / nav * 100, 4) if price and nav and nav > 0 else None
                 total_shares = _safe_float(fields[79])
                 items.append({
                     "code": code, "name": fields[1],
                     "price": price, "nav": nav, "premium_rate": premium,
+                    "amplitude": amplitude,
                     "change_pct": _safe_float(fields[32]),
                     "volume": _safe_float(fields[6]),
                     "amount": (_safe_float(fields[37]) or 0) * 10000,
@@ -172,8 +177,9 @@ def load_premium_history(days=5) -> dict:
             premium = item.get("premium")
             price = item.get("price")
             nav = item.get("nav")
+            amplitude = item.get("amplitude")
             if premium is not None:
-                history.setdefault(code, []).append((date, premium, price, nav))
+                history.setdefault(code, []).append((date, premium, price, nav, amplitude))
     print(f"历史交易日: {len(sorted_dates)} 天 ({sorted_dates})")
     return history
 
@@ -204,7 +210,7 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
     all_dates = set()
     if history:
         for v in history.values():
-            for d, _, _, _ in v:
+            for d, _, _, _, _ in v:
                 all_dates.add(d)
     sorted_dates = sorted(all_dates)
     # 交易日只取最近4个历史日（第5列用今日实时）
@@ -240,7 +246,7 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
                 est_premium = round((price - gsz) / gsz * 100, 4)
 
             h = (history or {}).get(code, [])
-            h_map = {d: (pr, pv, nv) for d, pr, pv, nv in h}
+            h_map = {d: (pr, pv, nv, amp) for d, pr, pv, nv, amp in h}
 
             vals = [h_map[d] for d in sorted_dates if d in h_map]
             if len(vals) >= 2:
@@ -251,6 +257,8 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
                 dir_chg = f'<span style="color:{ac};font-weight:600">{arrow} {diff:+.1f}</span>'
             else:
                 dir_chg = '<span style="color:#999">-</span>'
+
+            today_amp = f.get("amplitude")
 
             def _td(extra=""):
                 return f'style="padding:2px 3px;font-size:11px;border:none;text-align:center;white-space:nowrap;{extra}"'
@@ -271,9 +279,10 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
             for d in sorted_dates:
                 date_cells += f'<td {_td(f"color:#2c3e50;background:{bg}")}><b>{d[5:]}</b></td>'
 
-            prc_cells = _rc("收盘", lambda x: x[2], fmt=".4f")
-            nav_cells = _rc("净值", lambda x: x[1], fmt=".4f")
+            prc_cells = _rc("收盘", lambda x: x[1], fmt=".4f")
+            nav_cells = _rc("净值", lambda x: x[2], fmt=".4f")
             prem_cells = _rc("溢价", lambda x: x[0], lambda v: "#e74c3c" if v > 0 else "#7f8c8d", fmt="+.1f")
+            amp_cells = _rc("振幅", lambda x: x[3], fmt=".2f")
 
             if is_trade_day:
                 t = _td(f"color:#e67e22;background:{bg}")
@@ -281,10 +290,11 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
                 prc_cells += f'<td {_td(f"color:#2c3e50;background:{bg}")}><b>{_val(price)}</b></td>'
                 nav_cells += f'<td {_td(f"color:#2c3e50;background:{bg}")}><b>{_val(dwjz)}</b></td>'
                 prem_cells += f'<td {_td(f"color:#e67e22;background:{bg}")}><b>{_val(est_premium, "+.2f")}</b></td>' if est_premium is not None else f'<td {_td(f"color:#ddd;background:{bg}")}>-</td>'
+                amp_cells += f'<td {t}><b>{_val(today_amp, ".2f")}</b></td>'
 
             s = 'style="padding:2px 3px;font-size:11px;border:none;white-space:nowrap;'
             rows += f"""<tr style="background:{bg}">
-<td {s}text-align:left;width:88px" rowspan="5" valign="middle">
+<td {s}text-align:left;width:88px" rowspan="6" valign="middle">
 <a href="{url}" target="_blank" style="color:#2980b9;font-weight:700;font-size:11px;text-decoration:none">{code}</a><br>
 <span style="color:#95a5a6;font-size:9px">{name}</span>
 </td>
@@ -303,8 +313,11 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
 <tr style="background:{bg}">
 {nav_cells}
 </tr>
-<tr style="background:{bg};border-bottom:2px solid #ecf0f1">
+<tr style="background:{bg}">
 {prem_cells}
+</tr>
+<tr style="background:{bg};border-bottom:2px solid #ecf0f1">
+{amp_cells}
 </tr>"""
             alt = not alt
         return rows
@@ -468,8 +481,10 @@ async def main():
         premium = item.get("premium_rate")
         price = item.get("price")
         nav = item.get("nav")
+        amplitude = item.get("amplitude")
         if code and premium is not None:
-            day_entry[code] = {"premium": premium, "price": price, "nav": nav}
+            day_entry[code] = {"premium": premium, "price": price, "nav": nav,
+                               "amplitude": amplitude}
     cache[date_str] = day_entry
     # 只保留最近30天
     dates = sorted(cache.keys())

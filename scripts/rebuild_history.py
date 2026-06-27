@@ -39,7 +39,7 @@ def _secid(code: str, market: str) -> str:
 
 
 async def fetch_kline(client: httpx.AsyncClient, code: str, market: str) -> tuple[str, dict]:
-    """获取日K收盘价序列 {date: close}"""
+    """获取日K数据序列 {date: (close, high, low)}"""
     url = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
     params = {
         "secid": _secid(code, market),
@@ -57,10 +57,11 @@ async def fetch_kline(client: httpx.AsyncClient, code: str, market: str) -> tupl
         out = {}
         for line in klines:
             parts = line.split(",")
-            if len(parts) < 3:
+            if len(parts) < 5:
                 continue
             try:
-                out[parts[0]] = float(parts[2])  # 日期, 开盘, 收盘, ...
+                # f51=日期, f52=开盘, f53=收盘, f54=最高, f55=最低
+                out[parts[0]] = (float(parts[2]), float(parts[3]), float(parts[4]))
             except ValueError:
                 continue
         return code, out
@@ -130,26 +131,55 @@ async def main():
 
     # 预排序净值日期，便于 ≤D 最新净值查找
     nav_sorted = {code: sorted(v.keys()) for code, v in navs.items()}
+    # 预排序 K 线日期，便于停牌日用最近收盘价补齐
+    kline_sorted = {code: sorted(v.keys()) for code, v in klines.items()}
+
+    import bisect
 
     cache: dict = {}
     for date in target_dates:
         day_entry = {}
         for c in codes:
             code = c["code"]
-            price = klines.get(code, {}).get(date)
-            if not price:
-                continue
+            kl = klines.get(code, {})
+            kdates = kline_sorted.get(code, [])
+
+            # 取当日K线数据（停牌日补齐：沿用最近交易日的收盘价，振幅为0）
+            kl_data = kl.get(date)
+            is_suspended = False
+            if not kl_data:
+                is_suspended = True
+                if kdates:
+                    kidx = bisect.bisect_right(kdates, date) - 1
+                    if kidx >= 0:
+                        prev_date = kdates[kidx]
+                        prev_close = kl[prev_date][0]
+                        kl_data = (prev_close, prev_close, prev_close)  # 停牌：高=低=收盘
+                if not kl_data:
+                    continue
+
+            close, high, low = kl_data
+            price = close
+
+            # 计算振幅 = (最高 - 最低) / 昨收 × 100%
+            amplitude = 0.0
+            if not is_suspended and kdates:
+                kidx = bisect.bisect_right(kdates, date) - 1
+                if kidx > 0:  # kidx 指向 date 自身，kidx-1 为前一日
+                    prev_close = kl[kdates[kidx - 1]][0]
+                    if prev_close and prev_close > 0:
+                        amplitude = round((high - low) / prev_close * 100, 2)
+
             nav = None
             dates = nav_sorted.get(code, [])
             if dates:
-                # 二分找 ≤ date 的最新净值日期
-                import bisect
                 idx = bisect.bisect_right(dates, date) - 1
                 if idx >= 0:
                     nav = navs[code][dates[idx]]
             if price and nav and nav > 0:
                 premium = round((price - nav) / nav * 100, 4)
-                day_entry[code] = {"premium": premium, "price": price, "nav": nav}
+                day_entry[code] = {"premium": premium, "price": price, "nav": nav,
+                                   "amplitude": amplitude}
         cache[date] = day_entry
         print(f"  {date}: {len(day_entry)} 只基金")
 
