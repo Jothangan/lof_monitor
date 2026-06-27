@@ -347,6 +347,9 @@ async def main():
         else:
             print(f"[SKIP] 非交易日或数据异常：仅有 {len(traded)} 只基金有成交，跳过")
             return
+    if skip_check:
+        # 强制模式：视为非交易日，不使用IPOV/实时列
+        is_trade_day = False
 
     valid = [f for f in items if f["premium_rate"] is not None and f.get("amount") and f["amount"] > 0]
     valid.sort(key=lambda x: x["premium_rate"], reverse=True)
