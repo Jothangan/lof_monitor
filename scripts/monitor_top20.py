@@ -52,12 +52,14 @@ async def fetch_quotes(client, codes: list[dict]) -> list[dict]:
                 price = _safe_float(fields[3])
                 nav = _safe_float(fields[81])
                 premium = round((price - nav) / nav * 100, 4) if price and nav and nav > 0 else None
+                total_shares = _safe_float(fields[79])
                 items.append({
                     "code": code, "name": fields[1],
                     "price": price, "nav": nav, "premium_rate": premium,
                     "change_pct": _safe_float(fields[32]),
                     "volume": _safe_float(fields[6]),
                     "amount": (_safe_float(fields[37]) or 0) * 10000,
+                    "total_shares": total_shares,
                 })
         except Exception as e:
             print(f"[WARN] 批次 {i//TENCENT_BATCH} 失败: {e}")
@@ -134,41 +136,33 @@ def _safe_float(val):
         return None
 
 
+HISTORY_CACHE = "data/premium_history_cache.json"
+
 def load_premium_history(days=5) -> dict:
-    """读取最近 N 个**交易日**的溢价数据，返回 {code: [ (date, premium, price, nav), ... ]}"""
-    import glob
-    files = sorted(glob.glob("data/daily/*.json"))
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    trade_files = []
-    for fp in files:
-        fname = os.path.basename(fp).replace(".json", "")
-        if fname == today:
-            continue
+    """从全量历史缓存读取最近 N 个**交易日**的溢价数据
+    返回 {code: [ (date, premium, price, nav), ... ]}"""
+    cache = {}
+    if os.path.exists(HISTORY_CACHE):
         try:
-            with open(fp, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            if data.get("top_premium") and len(data["top_premium"]) > 0:
-                trade_files.append(fp)
+            with open(HISTORY_CACHE, "r", encoding="utf-8") as f:
+                cache = json.load(f)
         except Exception:
             pass
-    trade_files = trade_files[-days:]
+    sorted_dates = sorted(cache.keys())
+    # 排除今天
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    sorted_dates = [d for d in sorted_dates if d != today][-days:]
 
     history = {}
-    for fp in trade_files:
-        try:
-            with open(fp, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            date = data.get("date", os.path.basename(fp).replace(".json", ""))
-            for item in data.get("top_premium", []):
-                code = item.get("code", "")
-                premium = item.get("premium")
-                price = item.get("price")
-                nav = item.get("nav")
-                if code and premium is not None:
-                    history.setdefault(code, []).append((date, premium, price, nav))
-        except Exception as e:
-            print(f"[WARN] 读取历史 {fp} 失败: {e}")
-    print(f"历史交易日: {len(trade_files)} 天 ({[os.path.basename(f)[:10] for f in trade_files]})")
+    for date in sorted_dates:
+        day_data = cache.get(date, {})
+        for code, item in day_data.items():
+            premium = item.get("premium")
+            price = item.get("price")
+            nav = item.get("nav")
+            if premium is not None:
+                history.setdefault(code, []).append((date, premium, price, nav))
+    print(f"历史交易日: {len(sorted_dates)} 天 ({sorted_dates})")
     return history
 
 
@@ -192,7 +186,7 @@ def _limit_badge(status: str, label: str) -> str:
 
 
 def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
-                history: dict = None) -> str:
+                history: dict = None, is_trade_day: bool = True) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     all_dates = set()
@@ -206,15 +200,21 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
     def _val(v, fmt=".4f"):
         return f"{v:{fmt}}" if v is not None else "-"
 
+    NW = 'white-space:nowrap;'
+
     def _rows(items):
         rows = ""
+        alt = False
         for f in items:
             code = f["code"]
             name = f["name"][:14]
             url = f"https://fund.eastmoney.com/{code}.html"
+            bg = "#fafbfc" if alt else "#fff"
 
             l = limits.get(code, {})
             badge = _limit_badge(l.get("status", ""), l.get("limit_label", ""))
+            shares = f.get("total_shares")
+            shares_str = f"{shares:.2f}亿" if shares and shares >= 10000 else (f"{shares:.0f}万" if shares else "-")
 
             e = est_navs.get(code, {})
             dwjz = e.get("nav")
@@ -225,92 +225,98 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
                 est_premium = round((price - gsz) / gsz * 100, 4)
 
             h = (history or {}).get(code, [])
-            h_map = {d: (pr, pv, nv) for d, pr, pv, nv in h}  # {date: (premium, price, nav)}
+            h_map = {d: (pr, pv, nv) for d, pr, pv, nv in h}
 
-            # 历史趋势
             vals = [h_map[d] for d in sorted_dates if d in h_map]
             if len(vals) >= 2:
                 diff = vals[-1][0] - vals[-2][0]
-                if diff > 0: arrow, ac = "↑", "#f5222d"
-                elif diff < 0: arrow, ac = "↓", "#52c41a"
+                if diff > 0: arrow, ac = "↑", "#e74c3c"
+                elif diff < 0: arrow, ac = "↓", "#27ae60"
                 else: arrow, ac = "→", "#999"
                 dir_chg = f'<span style="color:{ac};font-weight:600">{arrow} {diff:+.1f}</span>'
             else:
                 dir_chg = '<span style="color:#999">-</span>'
 
-            # 构建7列: 标签 | d1 | d2 | d3 | d4 | d5 | 今日
-            def _row_cells(field, extractor, color_fn=None, fmt=".4f"):
-                cells = f'<td style="padding:2px 6px;font-size:10px;color:#888;text-align:center"><b>{field}</b></td>'
+            def _td(extra=""):
+                return f'style="padding:2px 3px;font-size:11px;border:none;text-align:center;white-space:nowrap;{extra}"'
+
+            def _rc(field, extractor, color_fn=None, fmt=".4f"):
+                c = f'<td {_td(f"color:#7f8c8d;background:{bg}")}>{field}</td>'
                 for d in sorted_dates:
                     item = h_map.get(d)
                     val = extractor(item) if item else None
                     if val is not None:
-                        color = color_fn(val) if color_fn else "#666"
-                        cells += f'<td style="padding:2px 6px;font-size:11px;color:{color};text-align:center"><b>{_val(val, fmt)}</b></td>'
+                        cl = color_fn(val) if color_fn else "#2c3e50"
+                        c += f'<td {_td(f"color:{cl};background:{bg}")}><b>{_val(val, fmt)}</b></td>'
                     else:
-                        cells += '<td style="padding:2px 6px;font-size:11px;color:#ddd;text-align:center">-</td>'
-                return cells
+                        c += f'<td {_td(f"color:#ddd;background:{bg}")}>-</td>'
+                return c
 
-            # 日期行特殊处理：直接用sorted_dates的日期，不从h_map取
-            date_row = '<td style="padding:2px 6px;font-size:10px;color:#888;text-align:center"><b>日期</b></td>'
+            date_cells = f'<td {_td(f"color:#7f8c8d;background:{bg}")}><b>日期</b></td>'
             for d in sorted_dates:
-                date_row += f'<td style="padding:2px 6px;font-size:11px;color:#999;text-align:center"><b>{d[5:]}</b></td>'
+                date_cells += f'<td {_td(f"color:#2c3e50;background:{bg}")}><b>{d[5:]}</b></td>'
 
-            price_row = _row_cells("收盘价", lambda x: x[2], lambda v: "#666")
-            nav_row = _row_cells("净值", lambda x: x[1], lambda v: "#666")
-            premium_row_cells = _row_cells("溢价率", lambda x: x[0], lambda v: "#52c41a" if v > 0 else "#999", fmt="+.1f")
+            prc_cells = _rc("收盘", lambda x: x[2], fmt=".4f")
+            nav_cells = _rc("净值", lambda x: x[1], fmt=".4f")
+            prem_cells = _rc("溢价", lambda x: x[0], lambda v: "#e74c3c" if v > 0 else "#7f8c8d", fmt="+.1f")
 
-            date_row += f'<td style="padding:2px 6px;font-size:11px;color:#999;text-align:center"><b>{today_label}(IPOV)</b></td>'
-            price_row += f'<td style="padding:2px 6px;font-size:11px;color:#666;text-align:center"><b>{_val(price)}</b></td>'
-            nav_row += f'<td style="padding:2px 6px;font-size:11px;color:#666;text-align:center"><b>{_val(dwjz)}</b></td>'
-            premium_row_cells += f'<td style="padding:2px 6px;font-size:11px;color:#fa8c16;text-align:center"><b>{_val(est_premium, "+.2f")}</b></td>' if est_premium is not None else '<td style="padding:2px 6px;font-size:11px;color:#ddd;text-align:center">-</td>'
+            if is_trade_day:
+                t = _td(f"color:#e67e22;background:{bg}")
+                date_cells += f'<td {t}><b>{today_label}</b></td>'
+                prc_cells += f'<td {_td(f"color:#2c3e50;background:{bg}")}><b>{_val(price)}</b></td>'
+                nav_cells += f'<td {_td(f"color:#2c3e50;background:{bg}")}><b>{_val(dwjz)}</b></td>'
+                prem_cells += f'<td {_td(f"color:#e67e22;background:{bg}")}><b>{_val(est_premium, "+.2f")}</b></td>' if est_premium is not None else f'<td {_td(f"color:#ddd;background:{bg}")}>-</td>'
 
-            rows += f"""<tr style="background:#fff;border-bottom:1px solid #eee">
-<td style="padding:4px 6px" rowspan="6" valign="middle">
-<a href="{url}" target="_blank" style="color:#333;font-weight:600;font-size:12px;text-decoration:none">{code}</a>
+            s = 'style="padding:2px 3px;font-size:11px;border:none;white-space:nowrap;'
+            rows += f"""<tr style="background:{bg}">
+<td {s}text-align:left;width:88px" rowspan="5" valign="middle">
+<a href="{url}" target="_blank" style="color:#2980b9;font-weight:700;font-size:11px;text-decoration:none">{code}</a><br>
+<span style="color:#95a5a6;font-size:9px">{name}</span>
 </td>
-<td style="padding:4px 6px;text-align:right;font-weight:700;color:#f5222d;font-size:12px">{f['premium_rate']:+.2f}%</td>
-<td style="padding:4px 6px;text-align:center;font-size:11px">{badge}</td>
-<td style="padding:4px 6px;text-align:right;font-size:11px;color:#666">{_format_amt(f.get('amount'))}</td>
-<td style="padding:4px 6px;text-align:right;font-size:11px">{dir_chg}</td>
+<td {s}text-align:right;font-weight:700;color:#e74c3c">{f['premium_rate']:+.2f}%</td>
+<td {s}text-align:center">{badge}</td>
+<td {s}text-align:right;color:#7f8c8d">{_format_amt(f.get('amount'))}</td>
+<td {s}text-align:center;color:#7f8c8d">{shares_str}</td>
+<td {s}text-align:center">{dir_chg}</td>
 </tr>
-<tr style="background:#fff;border-bottom:1px solid #eee">
-<td style="padding:2px 6px;font-size:11px;color:#999" colspan="4">{name}</td>
+<tr style="background:{bg}">
+{date_cells}
 </tr>
-<tr style="background:#fafafa">
-{date_row}
+<tr style="background:{bg}">
+{prc_cells}
 </tr>
-<tr style="background:#fafafa">
-{price_row}
+<tr style="background:{bg}">
+{nav_cells}
 </tr>
-<tr style="background:#fafafa">
-{nav_row}
-</tr>
-<tr style="background:#fafafa;border-bottom:3px solid #e8e8e8">
-{premium_row_cells}
+<tr style="background:{bg};border-bottom:2px solid #ecf0f1">
+{prem_cells}
 </tr>"""
+            alt = not alt
         return rows
 
-    return f"""<div style="font-family:sans-serif;max-width:720px;margin:0 auto;padding:20px">
-<div style="background:linear-gradient(135deg,#722ed1,#1890ff);border-radius:12px 12px 0 0;padding:20px;text-align:center">
-<h2 style="color:#fff;margin:0;font-size:18px">📊 LOF 溢价率 Top40 · 收盘报告</h2>
+    return f"""<div style="font-family:'Helvetica Neue',Arial,sans-serif;max-width:780px;margin:0 auto;padding:12px">
+<div style="background:linear-gradient(135deg,#2c3e50,#3498db);border-radius:8px 8px 0 0;padding:12px;text-align:center">
+<h2 style="color:#fff;margin:0;font-size:15px;letter-spacing:1px">📊 LOF 溢价率 Top40 · 收盘报告</h2>
 </div>
-<div style="background:#fff;border:1px solid #f0f0f0;padding:16px">
+<div style="background:#fff;border:1px solid #e0e0e0;border-top:none;padding:10px">
 
-<h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP40</h3>
-<table style="width:100%;border-collapse:collapse;font-size:13px">
-<thead><tr style="background:#fff1f0">
-<th style="padding:4px 6px;text-align:left">代码</th>
-<th style="padding:4px 6px;text-align:right">溢价率</th>
-<th style="padding:4px 6px;text-align:center">限购</th>
-<th style="padding:4px 6px;text-align:right">成交额</th>
-<th style="padding:4px 6px;text-align:center">趋势</th>
+<h3 style="margin:0 0 6px;font-size:12px;color:#2c3e50;border-left:3px solid #e74c3c;padding-left:8px">🔥 溢价 TOP40</h3>
+<table style="width:100%;border-collapse:collapse;font-size:11px;border:none">
+<thead><tr style="background:#f8f9fa;border-bottom:2px solid #dee2e6">
+<th style="padding:2px 3px;text-align:left;font-size:10px;color:#495057;font-weight:600;white-space:nowrap">代码</th>
+<th style="padding:2px 3px;text-align:right;font-size:10px;color:#495057;font-weight:600;white-space:nowrap">溢价率</th>
+<th style="padding:2px 3px;text-align:center;font-size:10px;color:#495057;font-weight:600;white-space:nowrap">限购</th>
+<th style="padding:2px 3px;text-align:right;font-size:10px;color:#495057;font-weight:600;white-space:nowrap">成交额</th>
+<th style="padding:2px 3px;text-align:center;font-size:10px;color:#495057;font-weight:600;white-space:nowrap">份额</th>
+<th style="padding:2px 3px;text-align:center;font-size:10px;color:#495057;font-weight:600;white-space:nowrap">趋势</th>
 </tr></thead>
 <tbody>{_rows(premium)}</tbody></table>
 
-<div style="margin-top:16px;padding:10px;background:#fffbe6;border:1px solid #ffe58f;border-radius:6px;font-size:12px;color:#666">
-红色=暂停申购 / 橙色=限制申购或有限额 / 灰色=开放申购<br>
-趋势列↑溢价扩大↓溢价收窄。触发时间：{now}
+<div style="margin-top:10px;padding:5px 8px;background:#f8f9fa;border-radius:4px;font-size:9px;color:#7f8c8d;line-height:1.5">
+<span style="background:#e74c3c;color:#fff;padding:0 2px;border-radius:2px">暂停</span> 暂停&nbsp;
+<span style="background:#e67e22;color:#fff;padding:0 2px;border-radius:2px">X元</span> 限制&nbsp;
+<span style="color:#7f8c8d">开放</span> 开放&nbsp;|&nbsp;
+↑扩大 ↓收窄&nbsp;|&nbsp;IPOV=实时估算&nbsp;|&nbsp;{now}
 </div>
 </div></div>"""
 
@@ -331,7 +337,8 @@ async def main():
     # ── 非交易日检测：有交易量的基金数极少说明当天休市 ──
     traded = [f for f in items if f.get("amount") and f["amount"] > 0]
     skip_check = os.environ.get("SKIP_TRADE_CHECK", "").lower() in ("true", "1", "yes")
-    if len(traded) < 5:
+    is_trade_day = len(traded) >= 5
+    if not is_trade_day:
         if skip_check:
             print(f"[FORCE] 非交易日检测已跳过 ({len(traded)} 只成交)")
         else:
@@ -365,11 +372,11 @@ async def main():
     with open("data/limits_cache.json", "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, indent=2)
 
-    # ── 加载近5日溢价历史 ──
-    history = load_premium_history(days=5)
-    print(f"加载历史天数: {len(set(d for v in history.values() for d, _ in v))} 天")
+    # ── 加载近4日溢价历史 ──
+    history = load_premium_history(days=4)
+    print(f"加载历史天数: {len(set(d for v in history.values() for d, *_ in v))} 天")
 
-    html = _build_html(top_premium, [], est_navs, limits, history=history)
+    html = _build_html(top_premium, [], est_navs, limits, history=history, is_trade_day=is_trade_day)
     subject = f"【LOF收盘】溢价TOP {top_premium[0]['premium_rate']:+.2f}%"
 
     recipients = [a.strip() for a in QQ_TO.split(",") if a.strip()]
@@ -414,6 +421,32 @@ async def main():
     with open(path, "w", encoding="utf-8") as f:
         json.dump(snapshot, f, ensure_ascii=False, indent=2)
     print(f"快照已保存: {path}")
+
+    # ── 保存全量数据到历史缓存（所有有净值的基金，不限TOP40）──
+    cache = {}
+    if os.path.exists(HISTORY_CACHE):
+        try:
+            with open(HISTORY_CACHE, "r", encoding="utf-8") as f:
+                cache = json.load(f)
+        except Exception:
+            pass
+    day_entry = {}
+    for item in items:
+        code = item.get("code", "")
+        premium = item.get("premium_rate")
+        price = item.get("price")
+        nav = item.get("nav")
+        if code and premium is not None:
+            day_entry[code] = {"premium": premium, "price": price, "nav": nav}
+    cache[date_str] = day_entry
+    # 只保留最近30天
+    dates = sorted(cache.keys())
+    if len(dates) > 30:
+        for d in dates[:-30]:
+            del cache[d]
+    with open(HISTORY_CACHE, "w", encoding="utf-8") as f:
+        json.dump(cache, f, ensure_ascii=False, indent=2)
+    print(f"历史缓存: {len(day_entry)} 只基金")
 
 
 if __name__ == "__main__":

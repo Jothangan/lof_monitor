@@ -37,6 +37,6 @@ jobs:
         run: |
           git config user.name "lof-monitor-bot"
           git config user.email "bot@lof-monitor"
-          git add data/daily/
+          git add data/daily/ data/premium_history_cache.json
           git diff --cached --quiet || git commit -m "chore: add daily snapshot $(date +%Y-%m-%d)"
           git push
