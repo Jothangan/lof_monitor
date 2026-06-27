@@ -135,10 +135,9 @@ def _safe_float(val):
 
 
 def load_premium_history(days=5) -> dict:
-    """读取最近 N 个**交易日**的溢价数据，返回 {code: [ (date, premium), ... ]}"""
+    """读取最近 N 个**交易日**的溢价数据，返回 {code: [ (date, premium, price, nav), ... ]}"""
     import glob
     files = sorted(glob.glob("data/daily/*.json"))
-    # 排除今天（当天数据尚未写入）和空快照
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     trade_files = []
     for fp in files:
@@ -163,8 +162,10 @@ def load_premium_history(days=5) -> dict:
             for item in data.get("top_premium", []):
                 code = item.get("code", "")
                 premium = item.get("premium")
+                price = item.get("price")
+                nav = item.get("nav")
                 if code and premium is not None:
-                    history.setdefault(code, []).append((date, premium))
+                    history.setdefault(code, []).append((date, premium, price, nav))
         except Exception as e:
             print(f"[WARN] 读取历史 {fp} 失败: {e}")
     print(f"历史交易日: {len(trade_files)} 天 ({[os.path.basename(f)[:10] for f in trade_files]})")
@@ -194,15 +195,17 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
                 history: dict = None) -> str:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    # ── 收集所有历史日期 ──
     all_dates = set()
     if history:
         for v in history.values():
-            for d, _ in v:
+            for d, _, _, _ in v:
                 all_dates.add(d)
     sorted_dates = sorted(all_dates)
+    today_label = datetime.now(timezone.utc).strftime("%m-%d")
 
-    # ── 统一行生成：每个基金3行 ──
+    def _val(v, fmt=".4f"):
+        return f"{v:{fmt}}" if v is not None else "-"
+
     def _rows(items):
         rows = ""
         for f in items:
@@ -221,26 +224,13 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
             if gsz and price and gsz > 0:
                 est_premium = round((price - gsz) / gsz * 100, 4)
 
-            dwjz_str = f"{dwjz:.4f}" if dwjz else "-"
-            gsz_str = f"{gsz:.4f}" if gsz else "-"
-            est_str = f"{est_premium:+.2f}%" if est_premium is not None else "-"
+            h = (history or {}).get(code, [])
+            h_map = {d: (pr, pv, nv) for d, pr, pv, nv in h}  # {date: (premium, price, nav)}
 
             # 历史趋势
-            h = (history or {}).get(code, [])
-            h_map = dict(h)
-            trend_cells = ""
-            for d in sorted_dates:
-                p = h_map.get(d)
-                if p is not None:
-                    c = "#52c41a" if p > 0 else "#999"
-                    trend_cells += f'<span style="color:{c}">{p:+.1f}</span> | '
-                else:
-                    trend_cells += '<span style="color:#ddd">-</span> | '
-            trend_cells = trend_cells.rstrip(" | ")
-
             vals = [h_map[d] for d in sorted_dates if d in h_map]
             if len(vals) >= 2:
-                diff = vals[-1] - vals[-2]
+                diff = vals[-1][0] - vals[-2][0]
                 if diff > 0: arrow, ac = "↑", "#f5222d"
                 elif diff < 0: arrow, ac = "↓", "#52c41a"
                 else: arrow, ac = "→", "#999"
@@ -248,28 +238,56 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
             else:
                 dir_chg = '<span style="color:#999">-</span>'
 
-            date_labels = " | ".join(d[5:] for d in sorted_dates)
+            # 构建7列: 标签 | d1 | d2 | d3 | d4 | d5 | 今日
+            def _row_cells(field, extractor, color_fn=None, fmt=".4f"):
+                cells = f'<td style="padding:2px 6px;font-size:10px;color:#888;text-align:center"><b>{field}</b></td>'
+                for d in sorted_dates:
+                    item = h_map.get(d)
+                    val = extractor(item) if item else None
+                    if val is not None:
+                        color = color_fn(val) if color_fn else "#666"
+                        cells += f'<td style="padding:2px 6px;font-size:11px;color:{color};text-align:center"><b>{_val(val, fmt)}</b></td>'
+                    else:
+                        cells += '<td style="padding:2px 6px;font-size:11px;color:#ddd;text-align:center">-</td>'
+                return cells
 
-            rows += f"""<tr style="background:#fff">
-<td style="padding:5px 6px;border-bottom:none" rowspan="4" valign="middle">
-<a href="{url}" target="_blank" style="color:#333;font-weight:600;font-size:12px;text-decoration:none">{code}</a><br>
-<span style="color:#999;font-size:10px">{name}</span>
+            # 日期行特殊处理：直接用sorted_dates的日期，不从h_map取
+            date_row = '<td style="padding:2px 6px;font-size:10px;color:#888;text-align:center"><b>日期</b></td>'
+            for d in sorted_dates:
+                date_row += f'<td style="padding:2px 6px;font-size:11px;color:#999;text-align:center"><b>{d[5:]}</b></td>'
+
+            price_row = _row_cells("收盘价", lambda x: x[2], lambda v: "#666")
+            nav_row = _row_cells("净值", lambda x: x[1], lambda v: "#666")
+            premium_row_cells = _row_cells("溢价率", lambda x: x[0], lambda v: "#52c41a" if v > 0 else "#999", fmt="+.1f")
+
+            date_row += f'<td style="padding:2px 6px;font-size:11px;color:#999;text-align:center"><b>{today_label}(IPOV)</b></td>'
+            price_row += f'<td style="padding:2px 6px;font-size:11px;color:#666;text-align:center"><b>{_val(price)}</b></td>'
+            nav_row += f'<td style="padding:2px 6px;font-size:11px;color:#666;text-align:center"><b>{_val(dwjz)}</b></td>'
+            premium_row_cells += f'<td style="padding:2px 6px;font-size:11px;color:#fa8c16;text-align:center"><b>{_val(est_premium, "+.2f")}</b></td>' if est_premium is not None else '<td style="padding:2px 6px;font-size:11px;color:#ddd;text-align:center">-</td>'
+
+            rows += f"""<tr style="background:#fff;border-bottom:1px solid #eee">
+<td style="padding:4px 6px" rowspan="6" valign="middle">
+<a href="{url}" target="_blank" style="color:#333;font-weight:600;font-size:12px;text-decoration:none">{code}</a>
 </td>
-<td style="padding:5px 6px;border-bottom:none;text-align:right;font-weight:700;color:#f5222d;font-size:12px">{f['premium_rate']:+.2f}%</td>
-<td style="padding:5px 6px;border-bottom:none;text-align:center;font-size:11px">{badge}</td>
-<td style="padding:5px 6px;border-bottom:none;text-align:right;font-size:11px;color:#666">{_format_amt(f.get('amount'))}</td>
-<td style="padding:5px 6px;border-bottom:none;text-align:right;font-size:11px">{dir_chg}</td>
+<td style="padding:4px 6px;text-align:right;font-weight:700;color:#f5222d;font-size:12px">{f['premium_rate']:+.2f}%</td>
+<td style="padding:4px 6px;text-align:center;font-size:11px">{badge}</td>
+<td style="padding:4px 6px;text-align:right;font-size:11px;color:#666">{_format_amt(f.get('amount'))}</td>
+<td style="padding:4px 6px;text-align:right;font-size:11px">{dir_chg}</td>
+</tr>
+<tr style="background:#fff;border-bottom:1px solid #eee">
+<td style="padding:2px 6px;font-size:11px;color:#999" colspan="4">{name}</td>
 </tr>
 <tr style="background:#fafafa">
-<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#888"><small>T-1净</small><br><b>{dwjz_str}</b></td>
-<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#888"><small>IPOV</small><br><b>{gsz_str}</b></td>
-<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#fa8c16" colspan="2"><small>IPOV溢价</small><br><b>{est_str}</b></td>
+{date_row}
 </tr>
 <tr style="background:#fafafa">
-<td style="padding:3px 6px;border-bottom:none;font-size:11px;color:#999;text-align:center" colspan="4">{date_labels}</td>
+{price_row}
 </tr>
-<tr style="background:#fafafa;border-bottom:2px solid #e8e8e8">
-<td style="padding:2px 6px 6px;font-size:11px;color:#666;text-align:center" colspan="4">{trend_cells}</td>
+<tr style="background:#fafafa">
+{nav_row}
+</tr>
+<tr style="background:#fafafa;border-bottom:3px solid #e8e8e8">
+{premium_row_cells}
 </tr>"""
         return rows
 
@@ -282,11 +300,11 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
 <h3 style="margin:0 0 8px;font-size:15px;color:#f5222d">🔥 溢价 TOP40</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px">
 <thead><tr style="background:#fff1f0">
-<th style="padding:6px 8px;text-align:left">代码/名称</th>
-<th style="padding:6px 8px;text-align:right">溢价率</th>
-<th style="padding:6px 8px;text-align:center">限购</th>
-<th style="padding:6px 8px;text-align:right">成交额</th>
-<th style="padding:6px 8px;text-align:center">趋势</th>
+<th style="padding:4px 6px;text-align:left">代码</th>
+<th style="padding:4px 6px;text-align:right">溢价率</th>
+<th style="padding:4px 6px;text-align:center">限购</th>
+<th style="padding:4px 6px;text-align:right">成交额</th>
+<th style="padding:4px 6px;text-align:center">趋势</th>
 </tr></thead>
 <tbody>{_rows(premium)}</tbody></table>
 
