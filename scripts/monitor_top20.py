@@ -142,7 +142,19 @@ def _safe_float(val):
 
 
 HISTORY_CACHE = "data/premium_history_cache.json"
+DELAYED_CODES_FILE = "data/delayed_nav_codes.json"
 TZ_CN = timezone(timedelta(hours=8))
+
+
+def _load_delayed_codes() -> set:
+    """加载净值延迟基金列表"""
+    if os.path.exists(DELAYED_CODES_FILE):
+        try:
+            with open(DELAYED_CODES_FILE, "r", encoding="utf-8") as f:
+                return set(json.load(f))
+        except Exception:
+            pass
+    return set()
 
 
 def _is_trade_day(d: datetime) -> bool:
@@ -178,8 +190,9 @@ def load_premium_history(days=5) -> dict:
             price = item.get("price")
             nav = item.get("nav")
             amplitude = item.get("amplitude")
+            nav_date = item.get("nav_date", date)
             if premium is not None:
-                history.setdefault(code, []).append((date, premium, price, nav, amplitude))
+                history.setdefault(code, []).append((date, premium, price, nav, amplitude, nav_date))
     print(f"历史交易日: {len(sorted_dates)} 天 ({sorted_dates})")
     return history
 
@@ -204,13 +217,14 @@ def _limit_badge(status: str, label: str) -> str:
 
 
 def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
-                history: dict = None, is_trade_day: bool = True) -> str:
+                history: dict = None, is_trade_day: bool = True,
+                delayed_codes: set = None) -> str:
     now = datetime.now(TZ_CN).strftime("%Y-%m-%d %H:%M UTC+8")
 
     all_dates = set()
     if history:
         for v in history.values():
-            for d, _, _, _, _ in v:
+            for d, _, _, _, _, _ in v:
                 all_dates.add(d)
     sorted_dates = sorted(all_dates)
     # 交易日只取最近4个历史日（第5列用今日实时）
@@ -246,9 +260,16 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
                 est_premium = round((price - gsz) / gsz * 100, 4)
 
             h = (history or {}).get(code, [])
-            h_map = {d: (pr, pv, nv, amp) for d, pr, pv, nv, amp in h}
+            h_map = {d: (pr, pv, nv, amp, nd) for d, pr, pv, nv, amp, nd in h}
 
-            vals = [h_map[d] for d in sorted_dates if d in h_map]
+            # 延迟基金：净值日期 < 交易日的天数不展示数据
+            is_delayed = code in (delayed_codes or set())
+            latest_hist_date = sorted_dates[-1] if sorted_dates else None
+            # 延迟基金最近1天历史净值滞后，趋势计算用倒数第2个有效值
+            valid_dates = [d for d in sorted_dates
+                           if d in h_map and (not is_delayed or h_map[d][4] >= d)]
+
+            vals = [h_map[d] for d in valid_dates]
             if len(vals) >= 2:
                 diff = vals[-1][0] - vals[-2][0]
                 if diff > 0: arrow, ac = "↑", "#e74c3c"
@@ -267,6 +288,10 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
                 c = f'<td {_td(f"color:#7f8c8d;background:{bg}")}>{field}</td>'
                 for d in sorted_dates:
                     item = h_map.get(d)
+                    # 延迟基金：净值日期 < 交易日的天，显示灰色"-"
+                    if is_delayed and item and item[4] < d:
+                        c += f'<td {_td(f"color:#ddd;background:{bg}")}>-</td>'
+                        continue
                     val = extractor(item) if item else None
                     if val is not None:
                         cl = color_fn(val) if color_fn else "#2c3e50"
@@ -277,7 +302,12 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
 
             date_cells = f'<td {_td(f"color:#7f8c8d;background:{bg}")}><b>日期</b></td>'
             for d in sorted_dates:
-                date_cells += f'<td {_td(f"color:#2c3e50;background:{bg}")}><b>{d[5:]}</b></td>'
+                # 延迟基金最近1天标记为灰色
+                item = h_map.get(d)
+                if is_delayed and item and item[4] < d:
+                    date_cells += f'<td {_td(f"color:#ccc;background:{bg}")}><b>{d[5:]}</b></td>'
+                else:
+                    date_cells += f'<td {_td(f"color:#2c3e50;background:{bg}")}><b>{d[5:]}</b></td>'
 
             prc_cells = _rc("收盘", lambda x: x[1], fmt=".4f")
             nav_cells = _rc("净值", lambda x: x[2], fmt=".4f")
@@ -286,7 +316,9 @@ def _build_html(premium: list, discount: list, est_navs: dict, limits: dict,
 
             if is_trade_day:
                 t = _td(f"color:#e67e22;background:{bg}")
-                date_cells += f'<td {t}><b>{today_label}</b></td>'
+                # 延迟基金今日列标注T-1
+                today_hdr = f'{today_label}<br><span style="font-size:8px;color:#999">T-1</span>' if is_delayed else today_label
+                date_cells += f'<td {t}><b>{today_hdr}</b></td>'
                 prc_cells += f'<td {_td(f"color:#2c3e50;background:{bg}")}><b>{_val(price)}</b></td>'
                 nav_cells += f'<td {_td(f"color:#2c3e50;background:{bg}")}><b>{_val(dwjz)}</b></td>'
                 prem_cells += f'<td {_td(f"color:#e67e22;background:{bg}")}><b>{_val(est_premium, "+.2f")}</b></td>' if est_premium is not None else f'<td {_td(f"color:#ddd;background:{bg}")}>-</td>'
@@ -419,7 +451,12 @@ async def main():
     hist_dates = set(d for v in history.values() for d, *_ in v)
     print(f"加载历史: {len(hist_dates)} 天 ({sorted(hist_dates)})")
 
-    html = _build_html(top_premium, [], est_navs, limits, history=history, is_trade_day=is_trade_day)
+    delayed_codes = _load_delayed_codes()
+    if delayed_codes:
+        print(f"净值延迟基金: {len(delayed_codes)} 只")
+
+    html = _build_html(top_premium, [], est_navs, limits, history=history,
+                       is_trade_day=is_trade_day, delayed_codes=delayed_codes)
     subject = f"【LOF收盘】溢价TOP {top_premium[0]['premium_rate']:+.2f}%"
 
     recipients = [a.strip() for a in QQ_TO.split(",") if a.strip()]
@@ -484,7 +521,7 @@ async def main():
         amplitude = item.get("amplitude")
         if code and premium is not None:
             day_entry[code] = {"premium": premium, "price": price, "nav": nav,
-                               "amplitude": amplitude}
+                               "amplitude": amplitude, "nav_date": date_str}
     cache[date_str] = day_entry
     # 只保留最近30天
     dates = sorted(cache.keys())

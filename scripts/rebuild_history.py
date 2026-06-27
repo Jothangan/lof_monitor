@@ -171,15 +171,17 @@ async def main():
                         amplitude = round((high - low) / prev_close * 100, 2)
 
             nav = None
+            nav_date = None
             dates = nav_sorted.get(code, [])
             if dates:
                 idx = bisect.bisect_right(dates, date) - 1
                 if idx >= 0:
                     nav = navs[code][dates[idx]]
+                    nav_date = dates[idx]
             if price and nav and nav > 0:
                 premium = round((price - nav) / nav * 100, 4)
                 day_entry[code] = {"premium": premium, "price": price, "nav": nav,
-                                   "amplitude": amplitude}
+                                   "amplitude": amplitude, "nav_date": nav_date}
         cache[date] = day_entry
         print(f"  {date}: {len(day_entry)} 只基金")
 
