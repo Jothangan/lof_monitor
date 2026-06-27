@@ -291,9 +291,13 @@ async def main():
 
     # ── 非交易日检测：有交易量的基金数极少说明当天休市 ──
     traded = [f for f in items if f.get("amount") and f["amount"] > 0]
+    skip_check = os.environ.get("SKIP_TRADE_CHECK", "").lower() in ("true", "1", "yes")
     if len(traded) < 5:
-        print(f"[SKIP] 非交易日或数据异常：仅有 {len(traded)} 只基金有成交，跳过")
-        return
+        if skip_check:
+            print(f"[FORCE] 非交易日检测已跳过 ({len(traded)} 只成交)")
+        else:
+            print(f"[SKIP] 非交易日或数据异常：仅有 {len(traded)} 只基金有成交，跳过")
+            return
 
     valid = [f for f in items if f["premium_rate"] is not None and f.get("amount") and f["amount"] > 0]
     valid.sort(key=lambda x: x["premium_rate"], reverse=True)

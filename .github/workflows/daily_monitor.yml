@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "30 01 * * 1-5"
   workflow_dispatch:
+    inputs:
+      force:
+        description: "强制运行（跳过非交易日检测）"
+        type: boolean
+        default: false
 
 jobs:
   monitor:
@@ -20,11 +25,12 @@ jobs:
       - name: 安装依赖
         run: pip install httpx
 
-      - name: 执行收盘 TOP20 监测
+      - name: 执行收盘 TOP40 监测
         env:
           QQ_EMAIL_USER: ${{ secrets.QQ_EMAIL_USER }}
           QQ_EMAIL_PASS: ${{ secrets.QQ_EMAIL_PASS }}
           QQ_EMAIL_TO: ${{ secrets.QQ_EMAIL_TO }}
+          SKIP_TRADE_CHECK: ${{ inputs.force || false }}
         run: python scripts/monitor_top20.py
 
       - name: 提交数据快照
