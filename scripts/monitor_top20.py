@@ -372,8 +372,9 @@ async def main():
     with open("data/limits_cache.json", "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, indent=2)
 
-    # ── 加载近4日溢价历史 ──
-    history = load_premium_history(days=4)
+    # ── 加载历史溢价数据 ──
+    hist_days = 4 if is_trade_day else 5
+    history = load_premium_history(days=hist_days)
     print(f"加载历史天数: {len(set(d for v in history.values() for d, *_ in v))} 天")
 
     html = _build_html(top_premium, [], est_navs, limits, history=history, is_trade_day=is_trade_day)
